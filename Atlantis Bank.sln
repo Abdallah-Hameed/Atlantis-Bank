@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlantis Bank-DAL", "Atlant
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlantis Bank-BLL", "Atlantis Bank-BLL\Atlantis Bank-BLL.csproj", "{53C6A463-1765-407E-A434-1FDF33B4FE83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonControls", "..\..\..\Don Library\DonControls\DonControls.csproj", "{D1E0D7A9-F7DA-47CC-A172-2342610341F4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{53C6A463-1765-407E-A434-1FDF33B4FE83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53C6A463-1765-407E-A434-1FDF33B4FE83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53C6A463-1765-407E-A434-1FDF33B4FE83}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D1E0D7A9-F7DA-47CC-A172-2342610341F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D1E0D7A9-F7DA-47CC-A172-2342610341F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D1E0D7A9-F7DA-47CC-A172-2342610341F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D1E0D7A9-F7DA-47CC-A172-2342610341F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

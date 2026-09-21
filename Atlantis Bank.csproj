@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DonControls, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Don Library\DonControls\bin\Debug\DonControls.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="ReaLTaiizor, Version=3.8.2.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\ReaLTaiizor.3.8.2.1\lib\net48\ReaLTaiizor.dll</HintPath>
@@ -343,10 +347,6 @@
     <None Include="Resources\customers.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Don Library\DonControls\DonControls.csproj">
-      <Project>{d1e0d7a9-f7da-47cc-a172-2342610341f4}</Project>
-      <Name>DonControls</Name>
-    </ProjectReference>
     <ProjectReference Include="Atlantis Bank-BLL\Atlantis Bank-BLL.csproj">
       <Project>{53c6a463-1765-407e-a434-1fdf33b4fe83}</Project>
       <Name>Atlantis Bank-BLL</Name>

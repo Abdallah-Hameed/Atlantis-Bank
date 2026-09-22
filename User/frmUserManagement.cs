@@ -44,15 +44,18 @@ namespace Atlantis_Bank
         {
             dtAllUsers = await clsUser.GetAllUsers();
 
-            if (dtAllUsers == null)
+            if (dtAllUsers == null || dtAllUsers.Rows.Count == 0)
             {
                 dtAllUsers = new DataTable();
+
+                return;
             }
 
             dt = dtAllUsers.DefaultView.ToTable(false, "UserID", "EmployeeID", "UserName",
                 "Branch", "Position", "Role");
 
             dgvUsers.DataSource = dt;
+
 
             if (dgvUsers.ColumnCount > 0)
             {

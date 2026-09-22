@@ -1,5 +1,6 @@
 ﻿using Atlantis_Bank_BLL;
 using AtlantisBank.DAL;
+using AtlantisBank_BLL;
 using System;
 using System.Data;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace AtlantisBank.BLL
 
         public string Password { get; set; }
 
+        public string PasswordSalt { get; set; }
+
         public bool Active { get; set; }
 
         public clsRole Role { get; set; }
@@ -35,6 +38,8 @@ namespace AtlantisBank.BLL
 
             Password = "";
 
+            PasswordSalt = "";
+
             Active = true;
 
             Role = new clsRole();
@@ -43,7 +48,7 @@ namespace AtlantisBank.BLL
         }
 
 
-        private clsUser(int UserID, string UserName, string Password, bool Active, int RoleID, int EmployeeID)
+        private clsUser(int UserID, string UserName, string Password, string PasswordSalt, bool Active, int RoleID, int EmployeeID)
         {
             Mode = enMode.Update;
 
@@ -52,6 +57,8 @@ namespace AtlantisBank.BLL
             this.UserName = UserName;
 
             this.Password = Password;
+
+            this.PasswordSalt = PasswordSalt;
 
             this.Active = Active;
 
@@ -71,12 +78,28 @@ namespace AtlantisBank.BLL
             if (Role == null)
                 throw new Exception("Role is null.");
 
-            bool IsAdded = clsUserData.AddNewUser(EmployeeInfo.EmployeeID, UserName, Password, Role.RoleID, ref NewUserID);
+            string PasswordHash = "";
+
+            string PasswordSalt = "";
+
+            clsPasswordHasher.HashPassword(Password, out PasswordHash, out PasswordSalt);
+
+            bool IsAdded = clsUserData.AddNewUser(
+                EmployeeInfo.EmployeeID,
+                UserName,
+                PasswordHash,
+                PasswordSalt,
+                Role.RoleID,
+                ref NewUserID);
 
             if (!IsAdded)
                 return false;
 
             UserID = NewUserID;
+
+            Password = PasswordHash;
+
+            this.PasswordSalt = PasswordSalt;
 
             return true;
         }
@@ -131,18 +154,34 @@ namespace AtlantisBank.BLL
 
             string Password = "";
 
+            string PasswordSalt = "";
+
             bool Active = false;
 
             int RoleID = -1;
 
             int EmployeeID = -1;
 
-            bool IsFound = clsUserData.GetUserInfoByID(UserID, ref UserName, ref Password, ref Active, ref RoleID, ref EmployeeID);
+            bool IsFound = clsUserData.GetUserInfoByID(
+                UserID,
+                ref UserName,
+                ref Password,
+                ref PasswordSalt,
+                ref Active,
+                ref RoleID,
+                ref EmployeeID);
 
             if (!IsFound)
                 return null;
 
-            return new clsUser(UserID, UserName, Password, Active, RoleID, EmployeeID);
+            return new clsUser(
+                UserID,
+                UserName,
+                Password,
+                PasswordSalt,
+                Active,
+                RoleID,
+                EmployeeID);
         }
 
 
@@ -152,18 +191,34 @@ namespace AtlantisBank.BLL
 
             string Password = "";
 
+            string PasswordSalt = "";
+
             bool Active = false;
 
             int RoleID = -1;
 
             int EmployeeID = -1;
 
-            bool IsFound = clsUserData.GetUserInfoByUserName(UserName, ref UserID, ref Password, ref Active, ref RoleID, ref EmployeeID);
+            bool IsFound = clsUserData.GetUserInfoByUserName(
+                UserName,
+                ref UserID,
+                ref Password,
+                ref PasswordSalt,
+                ref Active,
+                ref RoleID,
+                ref EmployeeID);
 
             if (!IsFound)
                 return null;
 
-            return new clsUser(UserID, UserName, Password, Active, RoleID, EmployeeID);
+            return new clsUser(
+                UserID,
+                UserName,
+                Password,
+                PasswordSalt,
+                Active,
+                RoleID,
+                EmployeeID);
         }
 
 
@@ -196,10 +251,22 @@ namespace AtlantisBank.BLL
             if (!clsAuthorization.HasPermission("User_ChangePassword"))
                 return enOperationResult.NoPermission;
 
+            string PasswordHash = "";
+
+            string PasswordSalt = "";
+
+            clsPasswordHasher.HashPassword(Password, out PasswordHash, out PasswordSalt);
+
             if (UserID == clsCurrentUser.CurrentUser.UserID)
             {
-                if (clsUserData.ChangePassword(UserID, Password))
+                if (clsUserData.ChangePassword(UserID, PasswordHash, PasswordSalt))
+                {
+                    this.Password = PasswordHash;
+
+                    this.PasswordSalt = PasswordSalt;
+
                     return enOperationResult.Success;
+                }
 
                 return enOperationResult.Failed;
             }
@@ -207,8 +274,14 @@ namespace AtlantisBank.BLL
             if (clsCurrentUser.CurrentUser.Role.RoleID < Role.RoleID)
                 return enOperationResult.NoPermission;
 
-            if (clsUserData.ChangePassword(UserID, Password))
+            if (clsUserData.ChangePassword(UserID, PasswordHash, PasswordSalt))
+            {
+                this.Password = PasswordHash;
+
+                this.PasswordSalt = PasswordSalt;
+
                 return enOperationResult.Success;
+            }
 
             return enOperationResult.Failed;
         }

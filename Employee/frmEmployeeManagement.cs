@@ -65,9 +65,11 @@ namespace Atlantis_Bank
         {
             dtAllEmployees = await clsEmployee.GetAllEmployees();
 
-            if (dtAllEmployees == null)
+            if (dtAllEmployees == null || dtAllEmployees.Rows.Count == 0)
             {
                 dtAllEmployees = new DataTable();
+
+                return;
             }
 
             dt = dtAllEmployees.DefaultView.ToTable(false, "EmployeeID", "NationalNo", "FirstName", "LastName",

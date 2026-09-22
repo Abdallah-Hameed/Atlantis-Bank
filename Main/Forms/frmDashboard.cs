@@ -62,7 +62,7 @@ namespace Atlantis_Bank
 
         private void btnSignOut_Click(object sender, EventArgs e)
         {
-            if(MessageBox.Show("Are you sure you want to sign out?","Confirm",MessageBoxButtons.YesNo,MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show("Are you sure you want to sign out?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 _SignOut();
             }

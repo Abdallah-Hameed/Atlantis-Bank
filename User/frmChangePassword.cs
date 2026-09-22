@@ -1,4 +1,5 @@
 ﻿using AtlantisBank.BLL;
+using AtlantisBank_BLL;
 using System;
 using System.Windows.Forms;
 
@@ -21,9 +22,10 @@ namespace Atlantis_Bank.Employee
 
         bool _CheckCurrentPassword()
         {
-            string CurrentPasswordHash = clsUtil.ComputeHash(txtCurrentPassword.TextButton.Trim());
-
-            return CurrentPasswordHash == _User.Password;
+            return clsPasswordHasher.VerifyPassword(
+                txtCurrentPassword.TextButton.Trim(),
+                _User.Password,
+                _User.PasswordSalt);
         }
 
 
@@ -35,7 +37,7 @@ namespace Atlantis_Bank.Employee
 
         enOperationResult _SaveNewPasswordInDatabase()
         {
-            return _User.ChangePassword(clsUtil.ComputeHash(txtNewPassword.TextButton.Trim()));
+            return _User.ChangePassword(txtNewPassword.TextButton.Trim());
         }
 
 
@@ -92,7 +94,6 @@ namespace Atlantis_Bank.Employee
             {
                 _SaveNewPassword();
             }
-
             else
             {
                 MessageBox.Show("Password must be at least 8 characters long.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -108,7 +109,6 @@ namespace Atlantis_Bank.Employee
             {
                 _SetNewPassword();
             }
-
             else
             {
                 MessageBox.Show("Passwords do not match.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -124,7 +124,6 @@ namespace Atlantis_Bank.Employee
             {
                 _ChangePassword();
             }
-
             else
             {
                 MessageBox.Show("Current password is wrong!", "Wrong password", MessageBoxButtons.OK, MessageBoxIcon.Error);

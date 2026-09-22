@@ -52,6 +52,7 @@
     <Compile Include="clsBranch.cs" />
     <Compile Include="clsClient.cs" />
     <Compile Include="clsCountry.cs" />
+    <Compile Include="clsPasswordHasher.cs" />
     <Compile Include="clsTransaction.cs" />
     <Compile Include="Common\clsCurrentUser.cs" />
     <Compile Include="clsEmployee.cs" />

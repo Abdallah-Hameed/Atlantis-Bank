@@ -1,8 +1,6 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Net;
-using System.Security.Policy;
 using System.Threading.Tasks;
 
 namespace Atlantis_Bank_DAL

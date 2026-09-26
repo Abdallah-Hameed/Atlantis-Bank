@@ -72,6 +72,8 @@ namespace Atlantis_Bank_BLL
                 this.PersonInfo.Address, this.PersonInfo.Email, this.PersonInfo.Phone, this.PersonInfo.ImagePath, this.RegDate,
                 this.BranchInfo.BranchID, this.IsActive);
 
+
+
             return result;
         }
 
@@ -178,12 +180,12 @@ namespace Atlantis_Bank_BLL
             {
                 case enMode.AddNew:
 
-                    if (!clsAuthorization.HasPermission("Client_Add"))
-                        return enOperationResult.NoPermission;
+                    //if (!clsAuthorization.HasPermission("Client_Add"))
+                    //    return enOperationResult.NoPermission;
 
                     // Prevent duplicate Client for the same NationalNo.
                     if (Find(this.PersonInfo.NationalNo) != null)
-                        return enOperationResult.AlreadyExists;
+                        return enOperationResult.NationalNoExists;
 
                     if (_AddNewClient())
                     {
@@ -197,8 +199,8 @@ namespace Atlantis_Bank_BLL
 
                 case enMode.Update:
 
-                    if (!clsAuthorization.HasPermission("Client_Edit"))
-                        return enOperationResult.NoPermission;
+                    //if (!clsAuthorization.HasPermission("Client_Edit"))
+                    //    return enOperationResult.NoPermission;
 
                     if (_UpdateClient())
                         return enOperationResult.Success;
@@ -212,8 +214,8 @@ namespace Atlantis_Bank_BLL
 
         public static async Task<DataTable> GetAllClientsAsync()
         {
-            if (!clsAuthorization.HasPermission("Client_View"))
-                return new DataTable();
+            //if (!clsAuthorization.HasPermission("Client_View"))
+            //    return new DataTable();
 
             return await clsClientData.GetAllClientsAsync();
         }
@@ -221,8 +223,8 @@ namespace Atlantis_Bank_BLL
 
         public static enOperationResult DeleteClient(int ClientID)
         {
-            if (!clsAuthorization.HasPermission("Client_Delete"))
-                return enOperationResult.NoPermission;
+            //if (!clsAuthorization.HasPermission("Client_Delete"))
+            //    return enOperationResult.NoPermission;
 
             if (!clsClientData.IsClientExists(ClientID))
                 return enOperationResult.NotFound;

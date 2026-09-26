@@ -116,7 +116,7 @@ namespace AtlantisBank.BLL
                         return enOperationResult.NoPermission;
 
                     if (Find(PersonInfo.NationalNo) != null)
-                        return enOperationResult.AlreadyExists;
+                        return enOperationResult.NationalNoExists;
 
                     if (_AddNewEmployee())
                     {

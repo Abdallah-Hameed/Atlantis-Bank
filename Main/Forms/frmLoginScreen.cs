@@ -1,8 +1,9 @@
-﻿using System;
-using System.Windows.Forms;
-using Microsoft.Win32;
+﻿using Atlantis_Bank_BLL;
 using AtlantisBank.BLL;
-using Atlantis_Bank_BLL;
+using AtlantisBank_BLL;
+using Microsoft.Win32;
+using System;
+using System.Windows.Forms;
 
 namespace Atlantis_Bank
 {
@@ -67,7 +68,7 @@ namespace Atlantis_Bank
 
             clsUser User = clsUser.FindByUserName(username);
 
-            if (User == null || clsUtil.ComputeHash(password) != User.Password)
+            if (User == null || !clsPasswordHasher.VerifyPassword(password, User.Password, User.PasswordSalt))
             {
                 MessageBox.Show("Invalid username or password.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Error);
 

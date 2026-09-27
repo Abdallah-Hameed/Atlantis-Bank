@@ -130,7 +130,7 @@ namespace Atlantis_Bank.User
 
                     NewUser.UserName = txtUserName.TextButton;
 
-                    NewUser.Password = clsUtil.ComputeHash(txtPassword.TextButton);
+                    NewUser.Password = txtPassword.TextButton;
 
                     NewUser.EmployeeInfo = _Employee;
                 }
@@ -171,7 +171,7 @@ namespace Atlantis_Bank.User
 
                         break;
 
-                    case enOperationResult.NationalNumberExists:
+                    case enOperationResult.UsernameExists:
 
                         MessageBox.Show("A user with this username already exists.", "User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 

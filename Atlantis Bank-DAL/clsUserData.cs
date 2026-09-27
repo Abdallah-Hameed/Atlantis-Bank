@@ -8,7 +8,7 @@ namespace AtlantisBank.DAL
 {
     public class clsUserData
     {
-        public static bool AddNewUser(int EmployeeID, string UserName, string Password, int RoleID, ref int NewUserID)
+        public static bool AddNewUser(int EmployeeID, string UserName, string Password, string PasswordSalt, int RoleID, ref int NewUserID)
         {
             try
             {
@@ -23,6 +23,8 @@ namespace AtlantisBank.DAL
                     command.Parameters.AddWithValue("@UserName", UserName);
 
                     command.Parameters.AddWithValue("@Password", Password);
+
+                    command.Parameters.AddWithValue("@PasswordSalt", PasswordSalt);
 
                     command.Parameters.AddWithValue("@RoleID", RoleID);
 
@@ -48,7 +50,8 @@ namespace AtlantisBank.DAL
             }
         }
 
-        public static bool GetUserInfoByID(int UserID,ref string UserName,ref string Password,ref bool Active,ref int RoleID,ref int EmployeeID)
+
+        public static bool GetUserInfoByID(int UserID, ref string UserName, ref string Password, ref string PasswordSalt, ref bool Active, ref int RoleID, ref int EmployeeID)
         {
             bool IsFound = false;
 
@@ -74,6 +77,8 @@ namespace AtlantisBank.DAL
 
                             Password = (string)reader["Password"];
 
+                            PasswordSalt = reader["PasswordSalt"] == DBNull.Value ? null : reader["PasswordSalt"].ToString();
+
                             Active = (bool)reader["Active"];
 
                             RoleID = (int)reader["RoleID"];
@@ -86,13 +91,14 @@ namespace AtlantisBank.DAL
                 return IsFound;
             }
 
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
         }
 
-        public static bool GetUserInfoByUserName(string UserName, ref int UserID, ref string Password, ref bool Active, ref int RoleID, ref int EmployeeID)
+
+        public static bool GetUserInfoByUserName(string UserName, ref int UserID, ref string Password, ref string PasswordSalt, ref bool Active, ref int RoleID, ref int EmployeeID)
         {
             bool IsFound = false;
 
@@ -118,6 +124,8 @@ namespace AtlantisBank.DAL
 
                             Password = (string)reader["Password"];
 
+                            PasswordSalt = reader["PasswordSalt"] == DBNull.Value ? null : reader["PasswordSalt"].ToString();
+
                             Active = (bool)reader["Active"];
 
                             RoleID = (int)reader["RoleID"];
@@ -130,11 +138,12 @@ namespace AtlantisBank.DAL
                 return IsFound;
             }
 
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
-            }    
+            }
         }
+
 
         public static bool UpdateUser(int UserID, string UserName, bool Active, int RoleID)
         {
@@ -168,6 +177,7 @@ namespace AtlantisBank.DAL
             }
         }
 
+
         public async static Task<DataTable> GetAllUsers()
         {
             DataTable dataTable = new DataTable();
@@ -197,6 +207,7 @@ namespace AtlantisBank.DAL
             }
         }
 
+
         public static bool DeleteUser(int UserID)
         {
             try
@@ -223,7 +234,8 @@ namespace AtlantisBank.DAL
             }
         }
 
-        public static bool ChangePassword(int UserID, string Password)
+
+        public static bool ChangePassword(int UserID, string Password, string PasswordSalt)
         {
             try
             {
@@ -236,6 +248,8 @@ namespace AtlantisBank.DAL
                     command.Parameters.AddWithValue("@UserID", UserID);
 
                     command.Parameters.AddWithValue("@Password", Password);
+
+                    command.Parameters.AddWithValue("@PasswordSalt", PasswordSalt);
 
                     connection.Open();
 
@@ -250,6 +264,7 @@ namespace AtlantisBank.DAL
                 throw;
             }
         }
+
 
         public static bool IsUserExists(int UserID)
         {

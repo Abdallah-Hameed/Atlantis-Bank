@@ -32,9 +32,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="ReaLTaiizor, Version=3.8.2.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ReaLTaiizor.3.8.2.1\lib\net48\ReaLTaiizor.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
@@ -52,6 +49,7 @@
     <Compile Include="clsBranch.cs" />
     <Compile Include="clsClient.cs" />
     <Compile Include="clsCountry.cs" />
+    <Compile Include="clsPasswordHasher.cs" />
     <Compile Include="clsTransaction.cs" />
     <Compile Include="Common\clsCurrentUser.cs" />
     <Compile Include="clsEmployee.cs" />

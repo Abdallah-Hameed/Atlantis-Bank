@@ -1,7 +1,5 @@
-﻿using Atlantis_Bank_API.DTOs;
-using Atlantis_Bank_API.DTOs.Client;
+﻿using Atlantis_Bank_API.DTOs.Employee;
 using Atlantis_Bank_API.Mappers;
-using Atlantis_Bank_BLL;
 using AtlantisBank.BLL;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -10,42 +8,42 @@ namespace Atlantis_Bank_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientController : ControllerBase
+    public class EmployeeController : ControllerBase
     {
         [HttpGet("All")]
-        public async Task<ActionResult<IEnumerable<clsClientDto>>> GetAllClients()
+        public async Task<ActionResult<IEnumerable<clsEmployeeDto>>> GetAllEmployees()
         {
-            DataTable dt = await clsClient.GetAllClientsAsync();
+            DataTable dt = await clsEmployee.GetAllEmployees();
 
-            IEnumerable<clsClientDto> clients = clsClientMapper.Map(dt);
+            IEnumerable<clsEmployeeDto> employees = clsEmployeeMapper.Map(dt);
 
-            return Ok(clients);
+            return Ok(employees);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<clsClientDto> GetClientById(int id)
+        public ActionResult<clsEmployeeDto> GetEmployeeById(int id)
         {
-            clsClient client = clsClient.Find(id);
+            clsEmployee employee = clsEmployee.Find(id);
 
-            if (client == null)
+            if (employee == null)
                 return NotFound();
 
-            clsClientDto dto = clsClientMapper.Map(client);
+            clsEmployeeDto dto = clsEmployeeMapper.Map(employee);
 
             return Ok(dto);
         }
 
         [HttpPost("Add")]
-        public IActionResult AddClient(clsAddClientDto dto)
+        public IActionResult AddEmployee(clsAddEmployeeDto dto)
         {
-            clsClient client = new clsClient();
+            clsEmployee employee = new clsEmployee();
 
-            clsClientMapper.MapToClient(dto, client);
+            clsEmployeeMapper.MapToEmployee(dto, employee);
 
-            enOperationResult result = client.Save();
+            enOperationResult result = employee.Save();
 
             if (result == enOperationResult.NoPermission)
-                return StatusCode(403, "You do not have permission to add clients.");
+                return StatusCode(403, "You do not have permission to add employees.");
 
             if (result == enOperationResult.NationalNumberExists)
                 return Conflict("National number already exists");
@@ -58,6 +56,9 @@ namespace Atlantis_Bank_API.Controllers
 
             if (result == enOperationResult.BranchNotFound)
                 return NotFound("Branch not found");
+
+            if (result == enOperationResult.PositionNotFound)
+                return NotFound("Position not found");
 
             if (result == enOperationResult.Failed)
                 return BadRequest();
@@ -65,23 +66,23 @@ namespace Atlantis_Bank_API.Controllers
             if (result != enOperationResult.Success)
                 return BadRequest();
 
-            return Ok(client.ClientID);
+            return Ok(employee.EmployeeID);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateClient(int id, clsAddClientDto dto)
+        public IActionResult UpdateEmployee(int id, clsAddEmployeeDto dto)
         {
-            clsClient client = clsClient.Find(id);
+            clsEmployee employee = clsEmployee.Find(id);
 
-            if (client == null)
+            if (employee == null)
                 return NotFound();
 
-            clsClientMapper.MapToClient(dto, client);
+            clsEmployeeMapper.MapToEmployee(dto, employee);
 
-            enOperationResult result = client.Save();
+            enOperationResult result = employee.Save();
 
             if (result == enOperationResult.NoPermission)
-                return StatusCode(403, "You do not have permission to edit clients.");
+                return StatusCode(403, "You do not have permission to edit employees.");
 
             if (result == enOperationResult.NationalNumberExists)
                 return Conflict("National number already exists");
@@ -94,6 +95,9 @@ namespace Atlantis_Bank_API.Controllers
 
             if (result == enOperationResult.BranchNotFound)
                 return NotFound("Branch not found");
+
+            if (result == enOperationResult.PositionNotFound)
+                return NotFound("Position not found");
 
             if (result == enOperationResult.Failed)
                 return BadRequest();
@@ -105,12 +109,12 @@ namespace Atlantis_Bank_API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteClient(int id)
+        public IActionResult DeleteEmployee(int id)
         {
-            enOperationResult result = clsClient.DeleteClient(id);
+            enOperationResult result = clsEmployee.DeleteEmployee(id);
 
             if (result == enOperationResult.NoPermission)
-                return StatusCode(403, "You do not have permission to delete clients.");
+                return StatusCode(403, "You do not have permission to delete employees.");
 
             if (result == enOperationResult.NotFound)
                 return NotFound();

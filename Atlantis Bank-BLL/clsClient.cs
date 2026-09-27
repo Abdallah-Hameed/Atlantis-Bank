@@ -73,6 +73,8 @@ namespace Atlantis_Bank_BLL
                 this.PersonInfo.Address, this.PersonInfo.Email, this.PersonInfo.Phone, this.PersonInfo.ImagePath, this.RegDate,
                 this.BranchInfo.BranchID, this.IsActive);
 
+
+
             return result;
         }
 
@@ -253,8 +255,8 @@ namespace Atlantis_Bank_BLL
 
         public static async Task<DataTable> GetAllClientsAsync()
         {
-            if (!clsAuthorization.HasPermission("Client_View"))
-                return new DataTable();
+            //if (!clsAuthorization.HasPermission("Client_View"))
+            //    return new DataTable();
 
             return await clsClientData.GetAllClientsAsync();
         }
@@ -262,8 +264,8 @@ namespace Atlantis_Bank_BLL
 
         public static enOperationResult DeleteClient(int ClientID)
         {
-            if (!clsAuthorization.HasPermission("Client_Delete"))
-                return enOperationResult.NoPermission;
+            //if (!clsAuthorization.HasPermission("Client_Delete"))
+            //    return enOperationResult.NoPermission;
 
             if (!clsClientData.IsClientExists(ClientID))
                 return enOperationResult.NotFound;

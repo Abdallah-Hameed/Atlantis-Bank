@@ -98,7 +98,7 @@ namespace AtlantisBank.BLL
                         return enOperationResult.NoPermission;
 
                     if (FindByUserName(UserName) != null)
-                        return enOperationResult.NationalNoExists;
+                        return enOperationResult.NationalNumberExists;
 
                     if (_AddNewUser())
                     {

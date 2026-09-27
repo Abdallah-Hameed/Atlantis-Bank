@@ -47,11 +47,17 @@ namespace Atlantis_Bank_API.Controllers
             if (result == enOperationResult.NoPermission)
                 return StatusCode(403);
 
-            if (result == enOperationResult.NationalNoExists)
-                return Conflict("Email already exists");
+            if (result == enOperationResult.NationalNumberExists)
+                return Conflict("National number already exists");
 
             if (result == enOperationResult.EmailExists)
                 return Conflict("Email already exists");
+
+            if (result == enOperationResult.CountryNotFound)
+                return NotFound("Country not found");
+
+            if (result == enOperationResult.BranchNotFound)
+                return NotFound("Branch not found");
 
             if (result == enOperationResult.Failed)
                 return BadRequest();
@@ -77,17 +83,22 @@ namespace Atlantis_Bank_API.Controllers
             if (result == enOperationResult.NoPermission)
                 return StatusCode(403);
 
-            if (result == enOperationResult.NationalNoExists)
-                return Conflict("Email already exists");
+            if (result == enOperationResult.NationalNumberExists)
+                return Conflict("National number already exists");
 
             if (result == enOperationResult.EmailExists)
                 return Conflict("Email already exists");
 
+            if (result == enOperationResult.CountryNotFound)
+                return NotFound("Country not found");
+
+            if (result == enOperationResult.BranchNotFound)
+                return NotFound("Branch not found");
+
             if (result == enOperationResult.Failed)
                 return BadRequest();
 
-            if (result != enOperationResult.Success)
-                return BadRequest();
+
 
             return Ok();
         }

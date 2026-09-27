@@ -2,6 +2,8 @@
 using AtlantisBank.BLL;
 using System;
 using System.Data;
+using System.Data.SqlClient;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Atlantis_Bank_BLL
@@ -53,7 +55,6 @@ namespace Atlantis_Bank_BLL
 
             Mode = enMode.Update;
         }
-
 
         private bool _AddNewClient()
         {
@@ -174,41 +175,81 @@ namespace Atlantis_Bank_BLL
         }
 
 
+        private enOperationResult _Validate()
+        {
+            if (PersonInfo == null)
+                return enOperationResult.ValidationError;
+
+            if (PersonInfo.CountryInfo == null)
+                return enOperationResult.CountryNotFound;
+
+            if (BranchInfo == null)
+                return enOperationResult.BranchNotFound;
+
+            return enOperationResult.Success;
+        }
+
+
         public enOperationResult Save()
         {
-            switch (Mode)
+            try
             {
-                case enMode.AddNew:
+                enOperationResult validationResult = _Validate();
 
-                    //if (!clsAuthorization.HasPermission("Client_Add"))
-                    //    return enOperationResult.NoPermission;
+                if (validationResult != enOperationResult.Success)
+                    return validationResult;
 
-                    // Prevent duplicate Client for the same NationalNo.
-                    if (Find(this.PersonInfo.NationalNo) != null)
-                        return enOperationResult.NationalNoExists;
+                switch (Mode)
+                {
+                    case enMode.AddNew:
 
-                    if (_AddNewClient())
-                    {
-                        Mode = enMode.Update;
+                        //if (!clsAuthorization.HasPermission("Client_Add"))
+                        //    return enOperationResult.NoPermission;
 
-                        return enOperationResult.Success;
-                    }
+                        if (Find(this.PersonInfo.NationalNo) != null)
+                            return enOperationResult.NationalNumberExists;
 
-                    return enOperationResult.Failed;
+                        if (_AddNewClient())
+                        {
+                            Mode = enMode.Update;
 
+                            return enOperationResult.Success;
+                        }
 
-                case enMode.Update:
+                        return enOperationResult.Failed;
 
-                    //if (!clsAuthorization.HasPermission("Client_Edit"))
-                    //    return enOperationResult.NoPermission;
+                    case enMode.Update:
 
-                    if (_UpdateClient())
-                        return enOperationResult.Success;
+                        //if (!clsAuthorization.HasPermission("Client_Edit"))
+                        //    return enOperationResult.NoPermission;
 
-                    return enOperationResult.Failed;
+                        if (_UpdateClient())
+                            return enOperationResult.Success;
+
+                        return enOperationResult.Failed;
+                }
+
+                return enOperationResult.InvalidOperation;
             }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 50005)
+                    return enOperationResult.EmailExists;
 
-            return enOperationResult.InvalidOperation;
+                if (ex.Number == 50003)
+                    return enOperationResult.NationalNumberExists;
+
+                if (ex.Number == 50006)
+                    return enOperationResult.CountryNotFound;
+
+                if (ex.Number == 50007)
+                    return enOperationResult.BranchNotFound;
+
+                if (ex.Number == 50008)
+                    return enOperationResult.PositionNotFound;
+
+                return enOperationResult.Failed;
+            }
         }
 
 

@@ -32,7 +32,6 @@ namespace AtlantisBank.DAL
 
             using (SqlConnection connection =
                 new SqlConnection(clsDataAccessSettings.ConnectionString))
-
             using (SqlCommand command =
                 new SqlCommand("SP_AddEmployee", connection))
             {
@@ -48,47 +47,40 @@ namespace AtlantisBank.DAL
                 command.Parameters.AddWithValue("@Address", Address);
                 command.Parameters.AddWithValue("@Email", Email);
                 command.Parameters.AddWithValue("@Phone", Phone);
-
-                command.Parameters.AddWithValue(
-                    "@ImagePath",
-                    (object)ImagePath ?? DBNull.Value);
-
+                command.Parameters.AddWithValue("@ImagePath", (object)ImagePath ?? DBNull.Value);
                 command.Parameters.AddWithValue("@HireDate", HireDate);
                 command.Parameters.AddWithValue("@Salary", Salary);
                 command.Parameters.AddWithValue("@BranchID", BranchID);
                 command.Parameters.AddWithValue("@PositionID", PositionID);
 
-
-                SqlParameter paramNewPersonID =
-                    new SqlParameter("@NewPersonID", SqlDbType.Int);
-
+                SqlParameter paramNewPersonID = new SqlParameter("@NewPersonID", SqlDbType.Int);
                 paramNewPersonID.Direction = ParameterDirection.Output;
-
                 command.Parameters.Add(paramNewPersonID);
 
-
-                SqlParameter paramNewEmployeeID =
-                    new SqlParameter("@NewEmployeeID", SqlDbType.Int);
-
+                SqlParameter paramNewEmployeeID = new SqlParameter("@NewEmployeeID", SqlDbType.Int);
                 paramNewEmployeeID.Direction = ParameterDirection.Output;
-
                 command.Parameters.Add(paramNewEmployeeID);
 
+                try
+                {
+                    connection.Open();
 
-                connection.Open();
+                    command.ExecuteNonQuery();
 
-                command.ExecuteNonQuery();
+                    NewPersonID =
+                        paramNewPersonID.Value == DBNull.Value
+                        ? -1
+                        : Convert.ToInt32(paramNewPersonID.Value);
 
-
-                NewPersonID =
-                    paramNewPersonID.Value == DBNull.Value
-                    ? -1
-                    : Convert.ToInt32(paramNewPersonID.Value);
-
-                NewEmployeeID =
-                    paramNewEmployeeID.Value == DBNull.Value
-                    ? -1
-                    : Convert.ToInt32(paramNewEmployeeID.Value);
+                    NewEmployeeID =
+                        paramNewEmployeeID.Value == DBNull.Value
+                        ? -1
+                        : Convert.ToInt32(paramNewEmployeeID.Value);
+                }
+                catch (SqlException ex)
+                {
+                    throw;
+                }
             }
 
             return NewEmployeeID != -1;
@@ -326,11 +318,19 @@ namespace AtlantisBank.DAL
 
                 command.Parameters.AddWithValue("@IsActive", IsActive);
 
-                connection.Open();
+                try
+                {
+                    connection.Open();
 
-                command.ExecuteNonQuery();
+                    command.ExecuteNonQuery();
 
-                return true;
+                    return true;
+                }
+
+                catch (SqlException ex)
+                {
+                    throw;
+                }
             }
         }
 

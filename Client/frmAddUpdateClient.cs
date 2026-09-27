@@ -318,7 +318,7 @@ namespace Atlantis_Bank
 
                         break;
 
-                    case enOperationResult.AlreadyExists:
+                    case enOperationResult.NationalNumberExists:
 
                         MessageBox.Show("A client with this National No already exists.", "Client", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 

@@ -14,7 +14,7 @@ namespace Atlantis_Bank
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmDashboard());
+            Application.Run(new frmLoginScreen());
         }
     }
 }

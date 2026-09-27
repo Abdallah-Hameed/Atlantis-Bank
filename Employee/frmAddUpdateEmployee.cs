@@ -527,7 +527,7 @@ namespace Atlantis_Bank
 
                         return;
 
-                    case enOperationResult.AlreadyExists:
+                    case enOperationResult.NationalNumberExists:
 
                         MessageBox.Show("An employee with this National No already exists.", "Employee", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
@@ -572,7 +572,7 @@ namespace Atlantis_Bank
 
                             return;
 
-                        case enOperationResult.AlreadyExists:
+                        case enOperationResult.NationalNumberExists:
 
                             MessageBox.Show("The employee was saved, but this username already exists.", "Employee", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 

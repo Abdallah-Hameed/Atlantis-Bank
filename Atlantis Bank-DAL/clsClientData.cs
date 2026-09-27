@@ -7,22 +7,8 @@ namespace Atlantis_Bank_DAL
 {
     public class clsClientData
     {
-        public static int AddNewClient
-        (
-            string FirstName,
-            string SecondName,
-            string LastName,
-            string NationalNo,
-            bool Gender,
-            int CountryID,
-            DateTime DateOfBirth,
-            string Address,
-            string Email,
-            string Phone,
-            string ImagePath,
-            DateTime RegDate,
-            int BranchID
-        )
+        public static int AddNewClient(string FirstName, string SecondName, string LastName, string NationalNo, bool Gender, int CountryID, 
+            DateTime DateOfBirth, string Address, string Email, string Phone, string ImagePath, DateTime RegDate, int BranchID)
         {
             int ClientID = -1;
 
@@ -76,7 +62,7 @@ namespace Atlantis_Bank_DAL
 
                 catch (SqlException ex)
                 {
-                    throw new Exception("Error: " + ex.Message, ex);
+                    throw;
                 }
             }
 
@@ -315,11 +301,19 @@ namespace Atlantis_Bank_DAL
 
                 command.Parameters.AddWithValue("@IsActive", IsActive);
 
-                connection.Open();
+                try
+                {
+                    connection.Open();
 
-                command.ExecuteNonQuery();
+                    command.ExecuteNonQuery();
 
-                return true;
+                    return true;
+                }
+
+                catch(SqlException ex)
+                {
+                    throw;
+                }
             }
         }
 

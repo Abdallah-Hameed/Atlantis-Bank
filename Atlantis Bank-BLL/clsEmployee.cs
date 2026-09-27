@@ -2,8 +2,7 @@
 using AtlantisBank.DAL;
 using System;
 using System.Data;
-using System.Net;
-using System.Security.Policy;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace AtlantisBank.BLL
@@ -77,6 +76,24 @@ namespace AtlantisBank.BLL
         }
 
 
+        private enOperationResult _Validate()
+        {
+            if (PersonInfo == null)
+                return enOperationResult.ValidationError;
+
+            if (PersonInfo.CountryInfo == null)
+                return enOperationResult.CountryNotFound;
+
+            if (BranchInfo == null)
+                return enOperationResult.BranchNotFound;
+
+            if (PositionInfo == null)
+                return enOperationResult.PositionNotFound;
+
+            return enOperationResult.Success;
+        }
+
+
         private bool _AddNewEmployee()
         {
             int NewPersonID = -1;
@@ -108,38 +125,64 @@ namespace AtlantisBank.BLL
 
         public enOperationResult Save()
         {
-            switch (Mode)
+            try
             {
-                case enMode.AddNew:
+                enOperationResult validationResult = _Validate();
 
-                    if (!clsAuthorization.HasPermission("Employee_Add"))
-                        return enOperationResult.NoPermission;
+                if (validationResult != enOperationResult.Success)
+                    return validationResult;
 
-                    if (Find(PersonInfo.NationalNo) != null)
-                        return enOperationResult.AlreadyExists;
+                switch (Mode)
+                {
+                    case enMode.AddNew:
 
-                    if (_AddNewEmployee())
-                    {
-                        Mode = enMode.Update;
+                        if (!clsAuthorization.HasPermission("Employee_Add"))
+                            return enOperationResult.NoPermission;
 
-                        return enOperationResult.Success;
-                    }
+                        if (Find(PersonInfo.NationalNo) != null)
+                            return enOperationResult.NationalNumberExists;
 
-                    return enOperationResult.Failed;
+                        if (_AddNewEmployee())
+                        {
+                            Mode = enMode.Update;
 
+                            return enOperationResult.Success;
+                        }
 
-                case enMode.Update:
+                        return enOperationResult.Failed;
 
-                    if (!clsAuthorization.HasPermission("Employee_Edit"))
-                        return enOperationResult.NoPermission;
+                    case enMode.Update:
 
-                    if (_UpdateEmployee())
-                        return enOperationResult.Success;
+                        if (!clsAuthorization.HasPermission("Employee_Edit"))
+                            return enOperationResult.NoPermission;
 
-                    return enOperationResult.Failed;
+                        if (_UpdateEmployee())
+                            return enOperationResult.Success;
+
+                        return enOperationResult.Failed;
+                }
+
+                return enOperationResult.InvalidOperation;
             }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 50005)
+                    return enOperationResult.EmailExists;
 
-            return enOperationResult.InvalidOperation;
+                if (ex.Number == 50003)
+                    return enOperationResult.NationalNumberExists;
+
+                if (ex.Number == 50006)
+                    return enOperationResult.CountryNotFound;
+
+                if (ex.Number == 50007)
+                    return enOperationResult.BranchNotFound;
+
+                if (ex.Number == 50008)
+                    return enOperationResult.PositionNotFound;
+
+                return enOperationResult.Failed;
+            }
         }
 
 

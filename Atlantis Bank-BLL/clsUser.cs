@@ -121,7 +121,7 @@ namespace AtlantisBank.BLL
                         return enOperationResult.NoPermission;
 
                     if (FindByUserName(UserName) != null)
-                        return enOperationResult.AlreadyExists;
+                        return enOperationResult.NationalNumberExists;
 
                     if (_AddNewUser())
                     {

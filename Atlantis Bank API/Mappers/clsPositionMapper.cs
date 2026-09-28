@@ -1,31 +1,30 @@
 ﻿using Atlantis_Bank_API.DTOs;
 using Atlantis_Bank_BLL;
 using System.Data;
-using System.Collections.Generic;
 
 namespace Atlantis_Bank_API.Mappers
 {
-    public static class PositionMapper
+    public static class clsPositionMapper
     {
-        public static PositionDTO ToDTO(clsPosition position)
+        public static clsPositionDTO ToDTO(clsPosition position)
         {
             if (position == null)
                 return null;
 
-            return new PositionDTO
+            return new clsPositionDTO
             {
                 PositionID = position.PositionID,
                 PositionDescription = position.PositionDescription
             };
         }
 
-        public static List<PositionDTO> ToDTOList(DataTable dt)
+        public static List<clsPositionDTO> ToDTOList(DataTable dt)
         {
-            List<PositionDTO> positions = new List<PositionDTO>();
+            List<clsPositionDTO> positions = new List<clsPositionDTO>();
 
             foreach (DataRow row in dt.Rows)
             {
-                positions.Add(new PositionDTO
+                positions.Add(new clsPositionDTO
                 {
                     PositionID = (int)row["PositionID"],
                     PositionDescription = (string)row["PositionDescription"]

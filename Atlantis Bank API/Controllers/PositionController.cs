@@ -10,22 +10,22 @@ namespace Atlantis_Bank_API.Controllers
     public class PositionController : ControllerBase
     {
         [HttpGet("All")]
-        public async Task<ActionResult<List<PositionDTO>>> GetAllPositions()
+        public async Task<ActionResult<List<clsPositionDTO>>> GetAllPositions()
         {
             var dt = await clsPosition.GetAllPositions();
 
-            return Ok(PositionMapper.ToDTOList(dt));
+            return Ok(clsPositionMapper.ToDTOList(dt));
         }
 
         [HttpGet("{id}")]
-        public ActionResult<PositionDTO> GetPositionByID(int id)
+        public ActionResult<clsPositionDTO> GetPositionByID(int id)
         {
             clsPosition position = clsPosition.Find(id);
 
             if (position == null)
                 return NotFound();
 
-            return Ok(PositionMapper.ToDTO(position));
+            return Ok(clsPositionMapper.ToDTO(position));
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Atlantis_Bank_API.DTOs
 {
-    public class PositionDTO
+    public class clsPositionDTO
     {
         public int PositionID { get; set; }
 

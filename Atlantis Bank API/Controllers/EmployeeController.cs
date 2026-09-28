@@ -3,13 +3,16 @@ using Atlantis_Bank_API.Mappers;
 using AtlantisBank.BLL;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Atlantis_Bank_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
+        [Authorize(Policy = "Employee_View")]
         [HttpGet("All")]
         public async Task<ActionResult<IEnumerable<clsEmployeeListDto>>> GetAllEmployees()
         {
@@ -20,6 +23,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(employees);
         }
 
+        [Authorize(Policy = "Employee_View")]
         [HttpGet("{id}")]
         public ActionResult<clsEmployeeDto> GetEmployeeById(int id)
         {
@@ -33,6 +37,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(dto);
         }
 
+        [Authorize(Policy = "Employee_Add")]
         [HttpPost("Add")]
         public IActionResult AddEmployee(clsAddEmployeeDto dto)
         {
@@ -69,6 +74,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(employee.EmployeeID);
         }
 
+        [Authorize(Policy = "Employee_Edit")]
         [HttpPut("{id}")]
         public IActionResult UpdateEmployee(int id, clsAddEmployeeDto dto)
         {
@@ -108,6 +114,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "Employee_Delete")]
         [HttpDelete("{id}")]
         public IActionResult DeleteEmployee(int id)
         {

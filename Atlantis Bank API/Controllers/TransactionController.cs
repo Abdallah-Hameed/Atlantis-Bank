@@ -1,16 +1,18 @@
 ﻿using Atlantis_Bank_API.DTOs.Transaction;
 using Atlantis_Bank_API.Mappers;
 using AtlantisBank.BLL;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Atlantis_Bank_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TransactionController : ControllerBase
     {
+        [Authorize(Policy = "Deposit")]
         [HttpPost("Deposit")]
         public async Task<IActionResult> Deposit(clsDepositDto dto)
         {
@@ -38,6 +40,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Policy = "Withdrawal")]
         [HttpPost("Withdrawal")]
         public async Task<IActionResult> Withdrawal(clsWithdrawalDto dto)
         {
@@ -67,6 +70,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Policy = "Transfer")]
         [HttpPost("Transfer")]
         public async Task<IActionResult> Transfer(clsTransferDto dto)
         {
@@ -99,6 +103,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Policy = "Transaction_View")]
         [HttpGet("All")]
         public async Task<IActionResult> GetAll()
         {

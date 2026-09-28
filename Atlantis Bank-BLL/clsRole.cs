@@ -1,4 +1,5 @@
 ﻿using Atlantis_Bank_DAL;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -41,6 +42,11 @@ namespace Atlantis_Bank_BLL
         public static async Task<DataTable> GetAllRoles()
         {
             return await clsRoleData.GetAllRoles();
+        }
+
+        public List<string> GetPermissions()
+        {
+            return clsRoleData.GetPermissionsByRoleID(this.RoleID);
         }
     }
 }

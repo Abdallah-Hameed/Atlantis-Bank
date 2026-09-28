@@ -19,6 +19,7 @@
         PersonNotFound = 15,
         AccountTypeAlreadyExists = 16,
         UsernameExists = 17,
-        NotFound = 18
+        NotFound = 18,
+        InvalidPassword=19,
     }
 }

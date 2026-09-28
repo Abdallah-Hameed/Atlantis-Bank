@@ -136,8 +136,8 @@ namespace AtlantisBank.BLL
                 {
                     case enMode.AddNew:
 
-                        //if (!clsAuthorization.HasPermission("Employee_Add"))
-                        //    return enOperationResult.NoPermission;
+                        if (!clsAuthorization.HasPermission("Employee_Add"))
+                            return enOperationResult.NoPermission;
 
                         if (Find(PersonInfo.NationalNo) != null)
                             return enOperationResult.NationalNumberExists;
@@ -153,8 +153,8 @@ namespace AtlantisBank.BLL
 
                     case enMode.Update:
 
-                        //if (!clsAuthorization.HasPermission("Employee_Edit"))
-                        //    return enOperationResult.NoPermission;
+                        if (!clsAuthorization.HasPermission("Employee_Edit"))
+                            return enOperationResult.NoPermission;
 
                         if (_UpdateEmployee())
                             return enOperationResult.Success;
@@ -290,8 +290,8 @@ namespace AtlantisBank.BLL
 
         public static async Task<DataTable> GetAllEmployees()
         {
-            //if (!clsAuthorization.HasPermission("Employee_View"))
-            //    return new DataTable();
+            if (!clsAuthorization.HasPermission("Employee_View"))
+                return new DataTable();
 
             return await clsEmployeeData.GetAllEmployees();
         }
@@ -299,8 +299,8 @@ namespace AtlantisBank.BLL
 
         public static enOperationResult DeleteEmployee(int EmployeeID)
         {
-            //if (!clsAuthorization.HasPermission("Employee_Delete"))
-            //    return enOperationResult.NoPermission;
+            if (!clsAuthorization.HasPermission("Employee_Delete"))
+                return enOperationResult.NoPermission;
 
             if (!clsEmployeeData.IsEmployeeExists(EmployeeID))
                 return enOperationResult.NotFound;

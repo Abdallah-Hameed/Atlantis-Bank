@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -66,6 +67,40 @@ namespace Atlantis_Bank_DAL
             }
 
             return IsFound;
+        }
+
+        public static List<string> GetPermissionsByRoleID(int RoleID)
+        {
+            List<string> permissions = new List<string>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
+
+                using (SqlCommand command = new SqlCommand("SP_GetPermissionsByRoleID", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@RoleID", RoleID);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            permissions.Add((string)reader["PermissionCode"]);
+                        }
+                    }
+                }
+
+                return permissions;
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

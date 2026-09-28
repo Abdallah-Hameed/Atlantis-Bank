@@ -124,8 +124,8 @@ namespace Atlantis_Bank_BLL
             {
                 case enMode.AddNew:
 
-                    //if (!clsAuthorization.HasPermission("Account_Add"))
-                    //    return enOperationResult.NoPermission;
+                    if (!clsAuthorization.HasPermission("Account_Add"))
+                        return enOperationResult.NoPermission;
 
                     try
                     {
@@ -153,8 +153,8 @@ namespace Atlantis_Bank_BLL
 
                 case enMode.Update:
 
-                    //if (!clsAuthorization.HasPermission("Account_Edit"))
-                    //    return enOperationResult.NoPermission;
+                    if (!clsAuthorization.HasPermission("Account_Edit"))
+                        return enOperationResult.NoPermission;
 
                     if (_UpdateAccount())
                         return enOperationResult.Success;
@@ -168,8 +168,8 @@ namespace Atlantis_Bank_BLL
 
         public static async Task<DataTable> GetAllAccountsAsync()
         {
-            //if (!clsAuthorization.HasPermission("Account_View"))
-            //    return new DataTable();
+            if (!clsAuthorization.HasPermission("Account_View"))
+                return new DataTable();
 
             return await clsAccountData.GetAllAccountsAsync();
         }
@@ -177,8 +177,8 @@ namespace Atlantis_Bank_BLL
 
         public static enOperationResult Delete(int AccountID)
         {
-            //if (!clsAuthorization.HasPermission("Account_Delete"))
-            //    return enOperationResult.NoPermission;
+            if (!clsAuthorization.HasPermission("Account_Delete"))
+                return enOperationResult.NoPermission;
 
             if (!clsAccountData.IsAccountExists(AccountID))
                 return enOperationResult.NotFound;

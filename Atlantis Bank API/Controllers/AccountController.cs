@@ -3,14 +3,17 @@ using Atlantis_Bank_API.Mappers;
 using Atlantis_Bank_BLL;
 using AtlantisBank.BLL;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Data;
 
 namespace Atlantis_Bank_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
+        [Authorize(Policy = "Account_View")]
         [HttpGet("All")]
         public async Task<ActionResult<IEnumerable<clsListAccountDto>>> GetAllAccounts()
         {
@@ -21,6 +24,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(accounts);
         }
 
+        [Authorize(Policy = "Account_View")]
         [HttpGet("{id}")]
         public ActionResult<clsAccountDto> GetAccountById(int id)
         {
@@ -34,6 +38,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(dto);
         }
 
+        [Authorize(Policy = "Account_Add")]
         [HttpPost("Add")]
         public IActionResult AddAccount(clsAddAccountDto dto)
         {
@@ -61,6 +66,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(account.AccountID);
         }
 
+        [Authorize(Policy = "Account_Edit")]
         [HttpPut("{id}")]
         public IActionResult UpdateAccount(int id, clsUpdateAccountDto dto)
         {
@@ -85,6 +91,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "Account_Delete")]
         [HttpDelete("{id}")]
         public IActionResult DeleteAccount(int id)
         {
@@ -105,6 +112,7 @@ namespace Atlantis_Bank_API.Controllers
             return NoContent();
         }
 
+        [Authorize(Policy = "Account_View")]
         [HttpGet("{id}/Balance")]
         public async Task<ActionResult<decimal>> GetBalance(int id)
         {

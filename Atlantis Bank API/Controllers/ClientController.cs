@@ -5,13 +5,16 @@ using Atlantis_Bank_BLL;
 using AtlantisBank.BLL;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Atlantis_Bank_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ControllerBase
     {
+        [Authorize(Policy = "Client_View")]
         [HttpGet("All")]
         public async Task<ActionResult<IEnumerable<clsClientDto>>> GetAllClients()
         {
@@ -22,6 +25,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(clients);
         }
 
+        [Authorize(Policy = "Client_View")]
         [HttpGet("{id}")]
         public ActionResult<clsClientDto> GetClientById(int id)
         {
@@ -35,6 +39,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(dto);
         }
 
+        [Authorize(Policy = "Client_Add")]
         [HttpPost("Add")]
         public IActionResult AddClient(clsAddClientDto dto)
         {
@@ -68,6 +73,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok(client.ClientID);
         }
 
+        [Authorize(Policy = "Client_Edit")]
         [HttpPut("{id}")]
         public IActionResult UpdateClient(int id, clsAddClientDto dto)
         {
@@ -104,6 +110,7 @@ namespace Atlantis_Bank_API.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "Client_Delete")]
         [HttpDelete("{id}")]
         public IActionResult DeleteClient(int id)
         {

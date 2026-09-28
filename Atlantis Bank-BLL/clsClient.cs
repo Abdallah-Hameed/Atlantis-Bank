@@ -59,7 +59,7 @@ namespace Atlantis_Bank_BLL
         private bool _AddNewClient()
         {
             this.ClientID = clsClientData.AddNewClient(this.PersonInfo.FirstName, this.PersonInfo.SecondName, this.PersonInfo.LastName,
-                this.PersonInfo.NationalNo, this.PersonInfo.Gender, this.PersonInfo.CountryInfo.CountryID, this.PersonInfo.DateOfBirth, 
+                this.PersonInfo.NationalNo, this.PersonInfo.Gender, this.PersonInfo.CountryInfo.CountryID, this.PersonInfo.DateOfBirth,
                 this.PersonInfo.Address, this.PersonInfo.Email, this.PersonInfo.Phone, this.PersonInfo.ImagePath, this.RegDate, this.BranchInfo.BranchID);
 
             return this.ClientID != -1;
@@ -68,8 +68,8 @@ namespace Atlantis_Bank_BLL
 
         private bool _UpdateClient()
         {
-            bool result = clsClientData.UpdateClient(this.ClientID, this.PersonInfo.FirstName, this.PersonInfo.SecondName, this.PersonInfo.LastName, 
-                this.PersonInfo.NationalNo, this.PersonInfo.Gender, this.PersonInfo.CountryInfo.CountryID, this.PersonInfo.DateOfBirth, 
+            bool result = clsClientData.UpdateClient(this.ClientID, this.PersonInfo.FirstName, this.PersonInfo.SecondName, this.PersonInfo.LastName,
+                this.PersonInfo.NationalNo, this.PersonInfo.Gender, this.PersonInfo.CountryInfo.CountryID, this.PersonInfo.DateOfBirth,
                 this.PersonInfo.Address, this.PersonInfo.Email, this.PersonInfo.Phone, this.PersonInfo.ImagePath, this.RegDate,
                 this.BranchInfo.BranchID, this.IsActive);
 
@@ -112,7 +112,7 @@ namespace Atlantis_Bank_BLL
             bool IsActive = false;
 
 
-            bool isFound = clsClientData.GetClientByID(ClientID, ref PersonID, ref FirstName, ref SecondName, ref LastName, ref NationalNo, 
+            bool isFound = clsClientData.GetClientByID(ClientID, ref PersonID, ref FirstName, ref SecondName, ref LastName, ref NationalNo,
                 ref Gender, ref CountryID, ref DateOfBirth, ref Address, ref Email, ref Phone, ref ImagePath, ref RegDate, ref BranchID, ref IsActive);
 
 
@@ -203,8 +203,8 @@ namespace Atlantis_Bank_BLL
                 {
                     case enMode.AddNew:
 
-                        //if (!clsAuthorization.HasPermission("Client_Add"))
-                        //    return enOperationResult.NoPermission;
+                        if (!clsAuthorization.HasPermission("Client_Add"))
+                            return enOperationResult.NoPermission;
 
                         if (Find(this.PersonInfo.NationalNo) != null)
                             return enOperationResult.NationalNumberExists;
@@ -220,8 +220,8 @@ namespace Atlantis_Bank_BLL
 
                     case enMode.Update:
 
-                        //if (!clsAuthorization.HasPermission("Client_Edit"))
-                        //    return enOperationResult.NoPermission;
+                        if (!clsAuthorization.HasPermission("Client_Edit"))
+                            return enOperationResult.NoPermission;
 
                         if (_UpdateClient())
                             return enOperationResult.Success;
@@ -255,8 +255,8 @@ namespace Atlantis_Bank_BLL
 
         public static async Task<DataTable> GetAllClientsAsync()
         {
-            //if (!clsAuthorization.HasPermission("Client_View"))
-            //    return new DataTable();
+            if (!clsAuthorization.HasPermission("Client_View"))
+                return new DataTable();
 
             return await clsClientData.GetAllClientsAsync();
         }
@@ -264,8 +264,8 @@ namespace Atlantis_Bank_BLL
 
         public static enOperationResult DeleteClient(int ClientID)
         {
-            //if (!clsAuthorization.HasPermission("Client_Delete"))
-            //    return enOperationResult.NoPermission;
+            if (!clsAuthorization.HasPermission("Client_Delete"))
+                return enOperationResult.NoPermission;
 
             if (!clsClientData.IsClientExists(ClientID))
                 return enOperationResult.NotFound;

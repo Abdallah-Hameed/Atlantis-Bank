@@ -2,9 +2,11 @@
 using Atlantis_Bank_API.Mappers;
 using Atlantis_Bank_BLL;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Atlantis_Bank_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PositionController : ControllerBase

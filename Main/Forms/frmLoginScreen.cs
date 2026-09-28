@@ -67,16 +67,6 @@ namespace Atlantis_Bank
 
             clsUser User = clsUser.FindByUserName(username);
 
-            string password = "string";
-
-            string hash = BCrypt.Net.BCrypt.HashPassword(password);
-
-            MessageBox.Show(hash);
-
-            bool result = BCrypt.Net.BCrypt.Verify(password, hash);
-
-            MessageBox.Show(result.ToString());
-
             if (User == null || !BCrypt.Net.BCrypt.Verify(Password, User.Password))
             {
                 MessageBox.Show("Invalid username or password.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Error);

@@ -36,7 +36,7 @@ namespace Atlantis_Bank.Employee
 
         enOperationResult _SaveNewPasswordInDatabase()
         {
-            return _User.ChangePassword(txtNewPassword.TextButton.Trim());
+            return _User.ChangePassword(txtCurrentPassword.TextButton.Trim(),txtNewPassword.TextButton.Trim());
         }
 
 

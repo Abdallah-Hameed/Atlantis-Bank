@@ -4,7 +4,7 @@
     {
         Success = 1,
         NoPermission = 2,
-        NotFound = 3,
+        AccountNotFound = 3,
         Failed = 4,
         NationalNumberExists = 5,
         ValidationError = 6,
@@ -14,11 +14,11 @@
         CountryNotFound = 10,
         BranchNotFound = 11,
         PositionNotFound = 12,
-        UsernameExists=12,
         RoleNotFound = 13,
-        EmployeeNotFound=14,
-
+        EmployeeNotFound = 14,
         PersonNotFound = 15,
         AccountTypeAlreadyExists = 16,
+        UsernameExists = 17,
+        NotFound = 18
     }
 }

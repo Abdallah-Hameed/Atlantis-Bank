@@ -9,8 +9,8 @@ public class clsTransaction
         if (amount <= 0)
             return enOperationResult.InvalidOperation;
 
-        if (! clsAuthorization.HasPosition("Deposit"))
-            return enOperationResult.NoPermission;
+        //if (! clsAuthorization.HasPosition("Deposit"))
+        //    return enOperationResult.NoPermission;
 
         int result = await clsTransactionData.DepositAsync(accountID, amount, employeeID);
 
@@ -22,8 +22,8 @@ public class clsTransaction
         if (amount <= 0)
             return enOperationResult.InvalidOperation;
 
-        if (!clsAuthorization.HasPosition("Withdrawal"))
-            return enOperationResult.NoPermission;
+        //if (!clsAuthorization.HasPosition("Withdrawal"))
+        //    return enOperationResult.NoPermission;
 
         int result = await clsTransactionData.WithdrawalAsync(accountID, amount, employeeID);
 
@@ -38,8 +38,8 @@ public class clsTransaction
         if (accountID == destinationAccountID)
             return enOperationResult.InvalidOperation;
 
-        if (!clsAuthorization.HasPosition("Transfer"))
-            return enOperationResult.NoPermission;
+        //if (!clsAuthorization.HasPosition("Transfer"))
+        //    return enOperationResult.NoPermission;
 
         int result = await clsTransactionData.TransferAsync(accountID, destinationAccountID, amount, employeeID);
 

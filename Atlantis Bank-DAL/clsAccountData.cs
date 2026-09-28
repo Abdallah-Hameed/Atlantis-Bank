@@ -40,7 +40,7 @@ namespace Atlantis_Bank_DAL
 
                 catch (SqlException ex)
                 {
-                    throw new Exception("Error: " + ex.Message, ex);
+                    throw ex;
                 }
             }
 

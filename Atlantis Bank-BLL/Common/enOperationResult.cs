@@ -16,6 +16,9 @@
         PositionNotFound = 12,
         UsernameExists=12,
         RoleNotFound = 13,
-        EmployeeNotFound=14
+        EmployeeNotFound=14,
+
+        PersonNotFound = 15,
+        AccountTypeAlreadyExists = 16,
     }
 }

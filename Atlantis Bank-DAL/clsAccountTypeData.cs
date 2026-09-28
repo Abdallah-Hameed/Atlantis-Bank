@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace Atlantis_Bank_DAL
 {
@@ -73,6 +74,37 @@ namespace Atlantis_Bank_DAL
             }
 
             return IsUpdated;
+        }
+
+        public static async Task<DataTable> GetAllAccountTypesAsync()
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
+
+                using (SqlCommand command = new SqlCommand("SP_GetAllAccountTypes", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    await connection.OpenAsync();
+
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        if (reader.HasRows)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            return dt;
         }
     }
 }

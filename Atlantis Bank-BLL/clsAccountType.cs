@@ -1,4 +1,6 @@
 ﻿using Atlantis_Bank_DAL;
+using System.Data;
+using System.Threading.Tasks;
 
 namespace Atlantis_Bank_BLL
 {
@@ -44,6 +46,11 @@ namespace Atlantis_Bank_BLL
         public bool Save()
         {
             return _UpdateAccountType();
+        }
+
+        public static async Task<DataTable> GetAllAccountTypes()
+        {
+            return await clsAccountTypeData.GetAllAccountTypesAsync();
         }
     }
 }

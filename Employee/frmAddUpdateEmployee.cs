@@ -555,7 +555,7 @@ namespace Atlantis_Bank
 
                     User.UserName = txtUserName.TextButton.Trim();
 
-                    User.Password = clsUtil.ComputeHash(txtPassword.TextButton);
+                    User.Password = txtPassword.TextButton;
 
                     User.Active = cmbAccountStatus.SelectedIndex == 0;
 

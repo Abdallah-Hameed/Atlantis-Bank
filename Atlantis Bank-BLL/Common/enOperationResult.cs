@@ -14,6 +14,8 @@
         CountryNotFound = 10,
         BranchNotFound = 11,
         PositionNotFound = 12,
-        UsernameExists=12
+        UsernameExists=12,
+        RoleNotFound = 13,
+        EmployeeNotFound=14
     }
 }

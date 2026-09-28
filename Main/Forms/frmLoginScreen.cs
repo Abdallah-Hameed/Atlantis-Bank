@@ -1,6 +1,5 @@
 ﻿using Atlantis_Bank_BLL;
 using AtlantisBank.BLL;
-using AtlantisBank_BLL;
 using Microsoft.Win32;
 using System;
 using System.Windows.Forms;
@@ -55,11 +54,11 @@ namespace Atlantis_Bank
 
         private void ctrlDonLogin_OnLoginClicked(object sender, EventArgs e)
         {
-            string username = ctrlDonLogin.Username.Trim();
+            string username = ctrlDonLogin.Username;
 
-            string password = ctrlDonLogin.Password.Trim();
+            string Password = ctrlDonLogin.Password;
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(Password))
             {
                 MessageBox.Show("Enter username and password.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
@@ -68,7 +67,17 @@ namespace Atlantis_Bank
 
             clsUser User = clsUser.FindByUserName(username);
 
-            if (User == null || !clsPasswordHasher.VerifyPassword(password, User.Password, User.PasswordSalt))
+            string password = "string";
+
+            string hash = BCrypt.Net.BCrypt.HashPassword(password);
+
+            MessageBox.Show(hash);
+
+            bool result = BCrypt.Net.BCrypt.Verify(password, hash);
+
+            MessageBox.Show(result.ToString());
+
+            if (User == null || !BCrypt.Net.BCrypt.Verify(Password, User.Password))
             {
                 MessageBox.Show("Invalid username or password.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -93,7 +102,7 @@ namespace Atlantis_Bank
 
             if (ctrlDonLogin.RememberMe)
             {
-                _SaveRememberedUsername(username, password);
+                _SaveRememberedUsername(username, Password);
             }
             else
             {

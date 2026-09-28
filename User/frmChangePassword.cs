@@ -1,5 +1,5 @@
 ﻿using AtlantisBank.BLL;
-using AtlantisBank_BLL;
+using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using System.Windows.Forms;
 
@@ -22,10 +22,9 @@ namespace Atlantis_Bank.Employee
 
         bool _CheckCurrentPassword()
         {
-            return clsPasswordHasher.VerifyPassword(
+            return BCrypt.Net.BCrypt.Verify(
                 txtCurrentPassword.TextButton.Trim(),
-                _User.Password,
-                _User.PasswordSalt);
+                _User.Password);
         }
 
 

@@ -303,11 +303,11 @@ namespace Atlantis_Bank
         {
             cmbFilter.SelectedIndex = 0;
 
-            btnAdd.Enabled = clsAuthorization.HasPermission("Employee_Add");
+            //btnAdd.Enabled = clsAuthorization.HasPermission("Employee_Add");
 
-            btnUpdate.Enabled = clsAuthorization.HasPermission("Employee_Edit");
+            //btnUpdate.Enabled = clsAuthorization.HasPermission("Employee_Edit");
 
-            btnDelete.Enabled = clsAuthorization.HasPermission("Employee_Delete");
+            //btnDelete.Enabled = clsAuthorization.HasPermission("Employee_Delete");
 
             await _Refresh();
         }

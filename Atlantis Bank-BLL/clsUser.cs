@@ -1,8 +1,8 @@
 ﻿using Atlantis_Bank_BLL;
 using AtlantisBank.DAL;
-using AtlantisBank_BLL;
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace AtlantisBank.BLL
@@ -19,14 +19,17 @@ namespace AtlantisBank.BLL
 
         public string Password { get; set; }
 
-        public string PasswordSalt { get; set; }
-
         public bool Active { get; set; }
 
         public clsRole Role { get; set; }
 
         public clsEmployee EmployeeInfo { get; set; }
 
+        public string RefreshTokenHash { get; set; }
+
+        public DateTime? RefreshTokenExpiresAt { get; set; }
+
+        public DateTime? RefreshTokenRevokedAt { get; set; }
 
         public clsUser()
         {
@@ -38,17 +41,21 @@ namespace AtlantisBank.BLL
 
             Password = "";
 
-            PasswordSalt = "";
-
             Active = true;
 
             Role = new clsRole();
 
             EmployeeInfo = new clsEmployee();
+
+            RefreshTokenHash = null;
+
+            RefreshTokenExpiresAt = null;
+
+            RefreshTokenRevokedAt = null;
         }
 
 
-        private clsUser(int UserID, string UserName, string Password, string PasswordSalt, bool Active, int RoleID, int EmployeeID)
+        private clsUser(int UserID, string UserName, string Password, bool Active, int RoleID, int EmployeeID)
         {
             Mode = enMode.Update;
 
@@ -58,37 +65,29 @@ namespace AtlantisBank.BLL
 
             this.Password = Password;
 
-            this.PasswordSalt = PasswordSalt;
-
             this.Active = Active;
 
             this.Role = clsRole.Find(RoleID);
 
             this.EmployeeInfo = clsEmployee.Find(EmployeeID);
-        }
 
+            RefreshTokenHash = null;
+
+            RefreshTokenExpiresAt = null;
+
+            RefreshTokenRevokedAt = null;
+        }
 
         private bool _AddNewUser()
         {
             int NewUserID = -1;
 
-            if (EmployeeInfo == null)
-                throw new Exception("EmployeeInfo is null.");
-
-            if (Role == null)
-                throw new Exception("Role is null.");
-
-            string PasswordHash = "";
-
-            string PasswordSalt = "";
-
-            clsPasswordHasher.HashPassword(Password, out PasswordHash, out PasswordSalt);
+            string PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password);
 
             bool IsAdded = clsUserData.AddNewUser(
                 EmployeeInfo.EmployeeID,
                 UserName,
                 PasswordHash,
-                PasswordSalt,
                 Role.RoleID,
                 ref NewUserID);
 
@@ -98,8 +97,6 @@ namespace AtlantisBank.BLL
             UserID = NewUserID;
 
             Password = PasswordHash;
-
-            this.PasswordSalt = PasswordSalt;
 
             return true;
         }
@@ -111,40 +108,57 @@ namespace AtlantisBank.BLL
         }
 
 
+        private enOperationResult _Validate()
+        {
+            if (Role == null)
+                return enOperationResult.RoleNotFound;
+
+            if (EmployeeInfo == null)
+                return enOperationResult.EmployeeNotFound;
+
+            return enOperationResult.Success;
+        }
+
         public enOperationResult Save()
         {
-            switch (Mode)
+            try
             {
-                case enMode.AddNew:
+                enOperationResult validationResult = _Validate();
 
-                    if (!clsAuthorization.HasPermission("User_Add"))
-                        return enOperationResult.NoPermission;
+                if (validationResult != enOperationResult.Success)
+                    return validationResult;
 
-                    if (FindByUserName(UserName) != null)
-                        return enOperationResult.AlreadyExists;
+                switch (Mode)
+                {
+                    case enMode.AddNew:
 
-                    if (_AddNewUser())
-                    {
-                        Mode = enMode.Update;
+                        if (FindByUserName(UserName) != null)
+                            return enOperationResult.UsernameExists;
 
-                        return enOperationResult.Success;
-                    }
+                        if (_AddNewUser())
+                        {
+                            Mode = enMode.Update;
 
-                    return enOperationResult.Failed;
+                            return enOperationResult.Success;
+                        }
 
+                        return enOperationResult.Failed;
 
-                case enMode.Update:
+                    case enMode.Update:
 
-                    if (!clsAuthorization.HasPermission("User_Edit"))
-                        return enOperationResult.NoPermission;
+                        if (_UpdateUser())
+                            return enOperationResult.Success;
 
-                    if (_UpdateUser())
-                        return enOperationResult.Success;
+                        return enOperationResult.Failed;
+                }
 
-                    return enOperationResult.Failed;
+                return enOperationResult.InvalidOperation;
             }
 
-            return enOperationResult.InvalidOperation;
+            catch (SqlException)
+            {
+                return enOperationResult.Failed;
+            }
         }
 
 
@@ -154,34 +168,47 @@ namespace AtlantisBank.BLL
 
             string Password = "";
 
-            string PasswordSalt = "";
-
             bool Active = false;
 
             int RoleID = -1;
 
             int EmployeeID = -1;
 
+            string RefreshTokenHash = null;
+
+            DateTime? RefreshTokenExpiresAt = null;
+
+            DateTime? RefreshTokenRevokedAt = null;
+
             bool IsFound = clsUserData.GetUserInfoByID(
                 UserID,
                 ref UserName,
                 ref Password,
-                ref PasswordSalt,
                 ref Active,
                 ref RoleID,
-                ref EmployeeID);
+                ref EmployeeID,
+                ref RefreshTokenHash,
+                ref RefreshTokenExpiresAt,
+                ref RefreshTokenRevokedAt);
 
             if (!IsFound)
                 return null;
 
-            return new clsUser(
+            clsUser user = new clsUser(
                 UserID,
                 UserName,
                 Password,
-                PasswordSalt,
                 Active,
                 RoleID,
                 EmployeeID);
+
+            user.RefreshTokenHash = RefreshTokenHash;
+
+            user.RefreshTokenExpiresAt = RefreshTokenExpiresAt;
+
+            user.RefreshTokenRevokedAt = RefreshTokenRevokedAt;
+
+            return user;
         }
 
 
@@ -191,42 +218,52 @@ namespace AtlantisBank.BLL
 
             string Password = "";
 
-            string PasswordSalt = "";
-
             bool Active = false;
 
             int RoleID = -1;
 
             int EmployeeID = -1;
 
+            string RefreshTokenHash = null;
+
+            DateTime? RefreshTokenExpiresAt = null;
+
+            DateTime? RefreshTokenRevokedAt = null;
+
             bool IsFound = clsUserData.GetUserInfoByUserName(
                 UserName,
                 ref UserID,
                 ref Password,
-                ref PasswordSalt,
                 ref Active,
                 ref RoleID,
-                ref EmployeeID);
+                ref EmployeeID,
+                ref RefreshTokenHash,
+                ref RefreshTokenExpiresAt,
+                ref RefreshTokenRevokedAt);
 
             if (!IsFound)
                 return null;
 
-            return new clsUser(
+            clsUser user = new clsUser(
                 UserID,
                 UserName,
                 Password,
-                PasswordSalt,
                 Active,
                 RoleID,
                 EmployeeID);
+
+            user.RefreshTokenHash = RefreshTokenHash;
+
+            user.RefreshTokenExpiresAt = RefreshTokenExpiresAt;
+
+            user.RefreshTokenRevokedAt = RefreshTokenRevokedAt;
+
+            return user;
         }
 
 
         public static enOperationResult Delete(int UserID)
         {
-            if (!clsAuthorization.HasPermission("User_Delete"))
-                return enOperationResult.NoPermission;
-
             if (!clsUserData.IsUserExists(UserID))
                 return enOperationResult.NotFound;
 
@@ -239,51 +276,67 @@ namespace AtlantisBank.BLL
 
         public async static Task<DataTable> GetAllUsers()
         {
-            if (!clsAuthorization.HasPermission("User_View"))
-                return new DataTable();
-
             return await clsUserData.GetAllUsers();
         }
 
 
-        public enOperationResult ChangePassword(string Password)
+        public enOperationResult ChangePassword(string OldPassword, string NewPassword)
         {
-            if (!clsAuthorization.HasPermission("User_ChangePassword"))
+            bool isSelf = (UserID == clsCurrentUser.CurrentUser.UserID);
+            bool isSuperAdmin = (clsCurrentUser.CurrentUser.Role.RoleID == 3);
+
+            if (!isSelf && !isSuperAdmin)
                 return enOperationResult.NoPermission;
 
-            string PasswordHash = "";
-
-            string PasswordSalt = "";
-
-            clsPasswordHasher.HashPassword(Password, out PasswordHash, out PasswordSalt);
-
-            if (UserID == clsCurrentUser.CurrentUser.UserID)
+            if (isSelf)
             {
-                if (clsUserData.ChangePassword(UserID, PasswordHash, PasswordSalt))
-                {
-                    this.Password = PasswordHash;
+                bool isOldPasswordValid = BCrypt.Net.BCrypt.Verify(OldPassword, this.Password);
 
-                    this.PasswordSalt = PasswordSalt;
-
-                    return enOperationResult.Success;
-                }
-
-                return enOperationResult.Failed;
+                if (!isOldPasswordValid)
+                    return enOperationResult.InvalidPassword;
             }
 
-            if (clsCurrentUser.CurrentUser.Role.RoleID < Role.RoleID)
-                return enOperationResult.NoPermission;
+            string PasswordHash = BCrypt.Net.BCrypt.HashPassword(NewPassword);
 
-            if (clsUserData.ChangePassword(UserID, PasswordHash, PasswordSalt))
+            if (clsUserData.ChangePassword(UserID, PasswordHash))
             {
                 this.Password = PasswordHash;
-
-                this.PasswordSalt = PasswordSalt;
 
                 return enOperationResult.Success;
             }
 
             return enOperationResult.Failed;
+        }
+
+        public bool SaveRefreshToken(string refreshTokenHash, DateTime expiresAt)
+        {
+            bool isSaved = clsUserData.UpdateRefreshToken(
+                this.UserID,
+                refreshTokenHash,
+                expiresAt);
+
+            if (isSaved)
+            {
+                this.RefreshTokenHash = refreshTokenHash;
+                this.RefreshTokenExpiresAt = expiresAt;
+                this.RefreshTokenRevokedAt = null;
+            }
+
+            return isSaved;
+        }
+
+        public bool RevokeRefreshToken()
+        {
+            DateTime revokedAt = DateTime.UtcNow;
+
+            bool isRevoked = clsUserData.RevokeRefreshToken(this.UserID, revokedAt);
+
+            if (isRevoked)
+            {
+                this.RefreshTokenRevokedAt = revokedAt;
+            }
+
+            return isRevoked;
         }
     }
 }

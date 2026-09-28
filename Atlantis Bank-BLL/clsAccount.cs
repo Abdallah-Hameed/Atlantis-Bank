@@ -1,8 +1,9 @@
-﻿using System;
-using System.Data;
-using System.Threading.Tasks;
-using Atlantis_Bank_DAL;
+﻿using Atlantis_Bank_DAL;
 using AtlantisBank.BLL;
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace Atlantis_Bank_BLL
 {
@@ -126,14 +127,28 @@ namespace Atlantis_Bank_BLL
                     if (!clsAuthorization.HasPermission("Account_Add"))
                         return enOperationResult.NoPermission;
 
-                    if (_AddNewAccount())
+                    try
                     {
-                        Mode = enMode.Update;
+                        if (_AddNewAccount())
+                        {
+                            Mode = enMode.Update;
 
-                        return enOperationResult.Success;
+                            return enOperationResult.Success;
+                        }
+
+                        return enOperationResult.Failed;
                     }
 
-                    return enOperationResult.Failed;
+                    catch (SqlException ex)
+                    {
+                        if (ex.Number == 50001)
+                            return enOperationResult.PersonNotFound;
+
+                        if (ex.Number == 50002)
+                            return enOperationResult.AccountTypeAlreadyExists;
+
+                        return enOperationResult.Failed;
+                    }
 
 
                 case enMode.Update:

@@ -8,7 +8,7 @@ namespace AtlantisBank.DAL
 {
     public class clsUserData
     {
-        public static bool AddNewUser(int EmployeeID, string UserName, string Password, string PasswordSalt, int RoleID, ref int NewUserID)
+        public static bool AddNewUser(int EmployeeID, string UserName, string Password, int RoleID, ref int NewUserID)
         {
             try
             {
@@ -23,8 +23,6 @@ namespace AtlantisBank.DAL
                     command.Parameters.AddWithValue("@UserName", UserName);
 
                     command.Parameters.AddWithValue("@Password", Password);
-
-                    command.Parameters.AddWithValue("@PasswordSalt", PasswordSalt);
 
                     command.Parameters.AddWithValue("@RoleID", RoleID);
 
@@ -50,8 +48,16 @@ namespace AtlantisBank.DAL
             }
         }
 
-
-        public static bool GetUserInfoByID(int UserID, ref string UserName, ref string Password, ref string PasswordSalt, ref bool Active, ref int RoleID, ref int EmployeeID)
+        public static bool GetUserInfoByID(
+            int UserID,
+            ref string UserName,
+            ref string Password,
+            ref bool Active,
+            ref int RoleID,
+            ref int EmployeeID,
+            ref string RefreshTokenHash,
+            ref DateTime? RefreshTokenExpiresAt,
+            ref DateTime? RefreshTokenRevokedAt)
         {
             bool IsFound = false;
 
@@ -77,13 +83,23 @@ namespace AtlantisBank.DAL
 
                             Password = (string)reader["Password"];
 
-                            PasswordSalt = reader["PasswordSalt"] == DBNull.Value ? null : reader["PasswordSalt"].ToString();
-
                             Active = (bool)reader["Active"];
 
                             RoleID = (int)reader["RoleID"];
 
                             EmployeeID = (int)reader["EmployeeID"];
+
+                            RefreshTokenHash = reader["RefreshTokenHash"] == DBNull.Value
+                                ? null
+                                : (string)reader["RefreshTokenHash"];
+
+                            RefreshTokenExpiresAt = reader["RefreshTokenExpiresAt"] == DBNull.Value
+                                ? (DateTime?)null
+                                : (DateTime)reader["RefreshTokenExpiresAt"];
+
+                            RefreshTokenRevokedAt = reader["RefreshTokenRevokedAt"] == DBNull.Value
+                                ? (DateTime?)null
+                                : (DateTime)reader["RefreshTokenRevokedAt"];
                         }
                     }
                 }
@@ -97,8 +113,16 @@ namespace AtlantisBank.DAL
             }
         }
 
-
-        public static bool GetUserInfoByUserName(string UserName, ref int UserID, ref string Password, ref string PasswordSalt, ref bool Active, ref int RoleID, ref int EmployeeID)
+        public static bool GetUserInfoByUserName(
+            string UserName,
+            ref int UserID,
+            ref string Password,
+            ref bool Active,
+            ref int RoleID,
+            ref int EmployeeID,
+            ref string RefreshTokenHash,
+            ref DateTime? RefreshTokenExpiresAt,
+            ref DateTime? RefreshTokenRevokedAt)
         {
             bool IsFound = false;
 
@@ -124,13 +148,23 @@ namespace AtlantisBank.DAL
 
                             Password = (string)reader["Password"];
 
-                            PasswordSalt = reader["PasswordSalt"] == DBNull.Value ? null : reader["PasswordSalt"].ToString();
-
                             Active = (bool)reader["Active"];
 
                             RoleID = (int)reader["RoleID"];
 
                             EmployeeID = (int)reader["EmployeeID"];
+
+                            RefreshTokenHash = reader["RefreshTokenHash"] == DBNull.Value
+                                ? null
+                                : (string)reader["RefreshTokenHash"];
+
+                            RefreshTokenExpiresAt = reader["RefreshTokenExpiresAt"] == DBNull.Value
+                                ? (DateTime?)null
+                                : (DateTime)reader["RefreshTokenExpiresAt"];
+
+                            RefreshTokenRevokedAt = reader["RefreshTokenRevokedAt"] == DBNull.Value
+                                ? (DateTime?)null
+                                : (DateTime)reader["RefreshTokenRevokedAt"];
                         }
                     }
                 }
@@ -235,7 +269,7 @@ namespace AtlantisBank.DAL
         }
 
 
-        public static bool ChangePassword(int UserID, string Password, string PasswordSalt)
+        public static bool ChangePassword(int UserID, string Password)
         {
             try
             {
@@ -248,8 +282,6 @@ namespace AtlantisBank.DAL
                     command.Parameters.AddWithValue("@UserID", UserID);
 
                     command.Parameters.AddWithValue("@Password", Password);
-
-                    command.Parameters.AddWithValue("@PasswordSalt", PasswordSalt);
 
                     connection.Open();
 
@@ -283,6 +315,64 @@ namespace AtlantisBank.DAL
             }
 
             return IsFound;
+        }
+
+        public static bool UpdateRefreshToken(int UserID, string RefreshTokenHash, DateTime RefreshTokenExpiresAt)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
+
+                using (SqlCommand command = new SqlCommand("SP_UpdateRefreshToken", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@UserID", UserID);
+
+                    command.Parameters.AddWithValue("@RefreshTokenHash", RefreshTokenHash);
+
+                    command.Parameters.AddWithValue("@RefreshTokenExpiresAt", RefreshTokenExpiresAt);
+
+                    connection.Open();
+
+                    command.ExecuteNonQuery();
+
+                    return true;
+                }
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public static bool RevokeRefreshToken(int UserID, DateTime RefreshTokenRevokedAt)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
+
+                using (SqlCommand command = new SqlCommand("SP_RevokeRefreshToken", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@UserID", UserID);
+
+                    command.Parameters.AddWithValue("@RefreshTokenRevokedAt", RefreshTokenRevokedAt);
+
+                    connection.Open();
+
+                    command.ExecuteNonQuery();
+
+                    return true;
+                }
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

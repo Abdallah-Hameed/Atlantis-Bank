@@ -96,69 +96,6 @@ namespace AtlantisBank.BLL
             this.ImagePath = ImagePath;
         }
 
-
-        private bool _AddNewPerson()
-        {
-            PersonID = clsPersonData.AddNewPerson(
-                FirstName,
-                SecondName,
-                LastName,
-                NationalNo,
-                Gender,
-                CountryInfo.CountryID,
-                DateOfBirth,
-                Address,
-                Email,
-                Phone,
-                ImagePath);
-
-            return PersonID != -1;
-        }
-
-
-        private bool _UpdatePerson()
-        {
-            return clsPersonData.UpdatePerson(
-                PersonID,
-                FirstName,
-                SecondName,
-                LastName,
-                NationalNo,
-                Gender,
-                CountryInfo.CountryID,
-                DateOfBirth,
-                Address,
-                Email,
-                Phone,
-                ImagePath);
-        }
-
-
-        public bool Save()
-        {
-            switch (Mode)
-            {
-                case enMode.AddNew:
-
-                    if (_AddNewPerson())
-                    {
-                        Mode = enMode.Update;
-
-                        return true;
-                    }
-
-                    return false;
-
-
-                case enMode.Update:
-
-                    return _UpdatePerson();
-            }
-
-            return false;
-        }
-
-
         public static clsPerson Find(int PersonID)
         {
             string FirstName = "";
@@ -207,64 +144,6 @@ namespace AtlantisBank.BLL
                 Email,
                 Phone,
                 ImagePath);
-        }
-
-
-        public static clsPerson Find(string NationalNo)
-        {
-            int PersonID = -1;
-
-            string FirstName = "";
-            string SecondName = "";
-            string LastName = "";
-
-            bool Gender = false;
-
-            int CountryID = -1;
-
-            DateTime DateOfBirth = DateTime.Now;
-
-            string Address = "";
-            string Email = "";
-            string Phone = "";
-            string ImagePath = "";
-
-            bool IsFound = clsPersonData.GetPersonByNationalNo(
-                NationalNo,
-                ref PersonID,
-                ref FirstName,
-                ref SecondName,
-                ref LastName,
-                ref Gender,
-                ref CountryID,
-                ref DateOfBirth,
-                ref Address,
-                ref Email,
-                ref Phone,
-                ref ImagePath);
-
-            if (!IsFound)
-                return null;
-
-            return new clsPerson(
-                PersonID,
-                FirstName,
-                SecondName,
-                LastName,
-                NationalNo,
-                Gender,
-                CountryID,
-                DateOfBirth,
-                Address,
-                Email,
-                Phone,
-                ImagePath);
-        }
-
-
-        public static bool IsPersonExists(int PersonID)
-        {
-            return clsPersonData.IsPersonExists(PersonID);
         }
     }
 }

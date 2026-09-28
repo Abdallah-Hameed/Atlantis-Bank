@@ -171,7 +171,7 @@ namespace Atlantis_Bank.User
 
                         break;
 
-                    case enOperationResult.AlreadyExists:
+                    case enOperationResult.UsernameExists:
 
                         MessageBox.Show("A user with this username already exists.", "User", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 

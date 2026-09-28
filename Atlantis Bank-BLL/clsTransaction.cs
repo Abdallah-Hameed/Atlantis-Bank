@@ -9,7 +9,7 @@ public class clsTransaction
         if (amount <= 0)
             return enOperationResult.InvalidOperation;
 
-        if (! clsAuthorization.HasPosition("Deposit"))
+        if (!clsAuthorization.HasPosition("Deposit"))
             return enOperationResult.NoPermission;
 
         int result = await clsTransactionData.DepositAsync(accountID, amount, employeeID);

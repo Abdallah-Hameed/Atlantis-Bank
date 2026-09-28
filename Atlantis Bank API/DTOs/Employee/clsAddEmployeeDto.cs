@@ -6,7 +6,7 @@
         public string SecondName { get; set; }
         public string LastName { get; set; }
 
-        public string NationalNo { get; set; }
+        public string NationalNumber { get; set; }
         public bool Gender { get; set; }
 
         public int CountryID { get; set; }

@@ -12,6 +12,13 @@ namespace Atlantis_Bank_API.Controllers
     [ApiController]
     public class AccountTypeController : ControllerBase
     {
+        private readonly ILogger<AccountTypeController> _logger;
+
+        public AccountTypeController(ILogger<AccountTypeController> logger)
+        {
+            _logger = logger;
+        }
+
         [Authorize(Policy = "Account_View")]
         [HttpGet("{id}")]
         public ActionResult<clsAccountTypeDTO> GetAccountTypeByID(int id)
@@ -30,6 +37,10 @@ namespace Atlantis_Bank_API.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateAccountType(int id, clsAccountTypeDTO dto)
         {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var actorId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+            var actorName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "unknown";
+
             clsAccountType accountType = clsAccountType.Find(id);
 
             if (accountType == null)
@@ -38,7 +49,17 @@ namespace Atlantis_Bank_API.Controllers
             accountType.AccountTypeDescription = dto.AccountTypeDescription;
 
             if (!accountType.Save())
+            {
+                _logger.LogError(
+                    "UpdateAccountType failed (unexpected error). Actor={ActorId}/{ActorName}, TargetAccountTypeID={TargetAccountTypeID}, IP={IP}",
+                    actorId, actorName, id, ip);
+
                 return BadRequest();
+            }
+
+            _logger.LogInformation(
+                "UpdateAccountType succeeded. Actor={ActorId}/{ActorName}, TargetAccountTypeID={TargetAccountTypeID}, IP={IP}",
+                actorId, actorName, id, ip);
 
             return Ok();
         }

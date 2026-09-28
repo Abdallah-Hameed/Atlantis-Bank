@@ -84,7 +84,7 @@ namespace Atlantis_Bank_API.Mappers
             employee.PersonInfo.SecondName = dto.SecondName;
             employee.PersonInfo.LastName = dto.LastName;
 
-            employee.PersonInfo.NationalNo = dto.NationalNo;
+            employee.PersonInfo.NationalNo = dto.NationalNumber;
             employee.PersonInfo.Gender = dto.Gender;
 
             employee.PersonInfo.CountryInfo = clsCountry.Find(dto.CountryID);

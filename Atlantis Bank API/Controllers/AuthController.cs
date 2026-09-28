@@ -2,6 +2,7 @@
 using AtlantisBank.BLL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,28 +16,64 @@ namespace Atlantis_Bank_API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private const string AuthFailureMessage =
+            "Invalid credentials. If this continues, please wait before trying again.";
 
+        private readonly ILogger<AuthController> _logger;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(ILogger<AuthController> logger, IConfiguration configuration)
+        {
+            _logger = logger;
+            _configuration = configuration;
+        }
+
+        private IActionResult AuthFail()
+            => Unauthorized(new { message = AuthFailureMessage });
+
+        [EnableRateLimiting("AuthLimiter")]
         [HttpPost("login")]
         public IActionResult Login([FromBody] clsLoginDto request)
         {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             clsUser user = clsUser.FindByUserName(request.UserName);
 
             if (user == null)
-                return Unauthorized("Invalid credentials");
+            {
+                _logger.LogWarning(
+                    "Login failed (user not found). UserName={UserName}, IP={IP}",
+                    request.UserName,
+                    ip);
 
+                return AuthFail();
+            }
 
             if (!user.Active)
-                return Unauthorized("User account is inactive");
+            {
+                _logger.LogWarning(
+                    "Login failed (inactive account). UserID={UserID}, UserName={UserName}, IP={IP}",
+                    user.UserID,
+                    user.UserName,
+                    ip);
+
+                return AuthFail();
+            }
 
             bool isValidPassword = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
 
             if (!isValidPassword)
-                return Unauthorized("Invalid credentials");
+            {
+                _logger.LogWarning(
+                    "Login failed (bad password). UserID={UserID}, UserName={UserName}, IP={IP}",
+                    user.UserID,
+                    user.UserName,
+                    ip);
 
+                return AuthFail();
+            }
 
             var accessToken = GenerateAccessToken(user);
-
 
             var refreshToken = GenerateRefreshToken();
 
@@ -45,6 +82,12 @@ namespace Atlantis_Bank_API.Controllers
 
             user.SaveRefreshToken(refreshTokenHash, expiresAt);
 
+            _logger.LogInformation(
+                "Login succeeded. UserID={UserID}, UserName={UserName}, IP={IP}",
+                user.UserID,
+                user.UserName,
+                ip);
+
             return Ok(new clsTokenResponseDto
             {
                 AccessToken = accessToken,
@@ -52,38 +95,71 @@ namespace Atlantis_Bank_API.Controllers
             });
         }
 
-
+        [EnableRateLimiting("AuthLimiter")]
         [HttpPost("refresh")]
         public IActionResult Refresh([FromBody] clsRefreshDto request)
         {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             clsUser user = clsUser.FindByUserName(request.UserName);
 
             if (user == null)
-                return Unauthorized("Invalid refresh request");
+            {
+                _logger.LogWarning(
+                    "Refresh failed (user not found). UserName={UserName}, IP={IP}",
+                    request.UserName,
+                    ip);
 
+                return AuthFail();
+            }
 
             if (user.RefreshTokenRevokedAt != null)
-                return Unauthorized("Refresh token is revoked");
+            {
+                _logger.LogWarning(
+                    "Refresh failed (revoked). UserID={UserID}, UserName={UserName}, IP={IP}",
+                    user.UserID,
+                    user.UserName,
+                    ip);
 
+                return AuthFail();
+            }
 
             if (user.RefreshTokenExpiresAt == null || user.RefreshTokenExpiresAt <= DateTime.UtcNow)
-                return Unauthorized("Refresh token expired");
+            {
+                _logger.LogWarning(
+                    "Refresh failed (expired). UserID={UserID}, UserName={UserName}, IP={IP}",
+                    user.UserID,
+                    user.UserName,
+                    ip);
 
+                return AuthFail();
+            }
 
             bool refreshValid = BCrypt.Net.BCrypt.Verify(request.RefreshToken, user.RefreshTokenHash);
             if (!refreshValid)
-                return Unauthorized("Invalid refresh token");
+            {
+                _logger.LogWarning(
+                    "Refresh failed (invalid token). UserID={UserID}, UserName={UserName}, IP={IP}",
+                    user.UserID,
+                    user.UserName,
+                    ip);
+
+                return AuthFail();
+            }
 
             var newAccessToken = GenerateAccessToken(user);
-
 
             var newRefreshToken = GenerateRefreshToken();
             string newRefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(newRefreshToken);
             DateTime newExpiresAt = DateTime.UtcNow.AddDays(7);
 
-
             user.SaveRefreshToken(newRefreshTokenHash, newExpiresAt);
+
+            _logger.LogInformation(
+                "Refresh succeeded. UserID={UserID}, UserName={UserName}, IP={IP}",
+                user.UserID,
+                user.UserName,
+                ip);
 
             return Ok(new clsTokenResponseDto
             {
@@ -92,68 +168,80 @@ namespace Atlantis_Bank_API.Controllers
             });
         }
 
-
         [HttpPost("logout")]
         public IActionResult Logout([FromBody] clsLogoutDto request)
         {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
             clsUser user = clsUser.FindByUserName(request.UserName);
 
             if (user == null)
-                return Ok();
+            {
+                _logger.LogWarning(
+                    "Logout attempted (user not found). UserName={UserName}, IP={IP}",
+                    request.UserName,
+                    ip);
+
+                return Ok(new { message = "Logged out successfully" });
+            }
 
             bool refreshValid = BCrypt.Net.BCrypt.Verify(request.RefreshToken, user.RefreshTokenHash);
             if (!refreshValid)
-                return Ok();
+            {
+                _logger.LogWarning(
+                    "Logout failed (invalid refresh token). UserID={UserID}, UserName={UserName}, IP={IP}",
+                    user.UserID,
+                    user.UserName,
+                    ip);
+
+                return Ok(new { message = "Logged out successfully" });
+            }
 
             user.RevokeRefreshToken();
 
-            return Ok("Logged out successfully");
+            _logger.LogInformation(
+                "Logout succeeded. UserID={UserID}, UserName={UserName}, IP={IP}",
+                user.UserID,
+                user.UserName,
+                ip);
+
+            return Ok(new { message = "Logged out successfully" });
         }
 
         private string GenerateAccessToken(clsUser user)
         {
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.Role, user.Role.RoleDescription),
-        new Claim("RoleID", user.Role.RoleID.ToString())
-    };
-
-            if (user.EmployeeInfo != null)
             {
-                claims.Add(new Claim("EmployeeID", user.EmployeeInfo.EmployeeID.ToString()));
-            }
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, user.Role.RoleDescription),
+                new Claim("RoleID", user.Role.RoleID.ToString())
+            };
 
-            // Role Permissions
-            List<string> rolePermissions = user.Role.GetPermissions();
-            foreach (string permission in rolePermissions)
+            List<string> permissions = user.Role.GetPermissions();
+
+            foreach (string permission in permissions)
             {
                 claims.Add(new Claim("Permission", permission));
             }
 
-            // Position Permissions
-            if (user.EmployeeInfo != null && user.EmployeeInfo.PositionInfo != null)
-            {
-                claims.Add(new Claim("PositionID", user.EmployeeInfo.PositionInfo.PositionID.ToString()));
+            var jwtKey = _configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Jwt:Key is not configured.");
 
-                HashSet<string> positionPermissions = clsAuthorization.GetPositionPermissions(
-                    user.EmployeeInfo.PositionInfo.PositionID);
+            var jwtIssuer = _configuration["Jwt:Issuer"]
+                ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
 
-                foreach (string permission in positionPermissions)
-                {
-                    claims.Add(new Claim("PositionPermission", permission));
-                }
-            }
+            var jwtAudience = _configuration["Jwt:Audience"]
+                ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("THIS_IS_A_VERY_SECRET_KEY_FOR_ATLANTIS_BANK_123456"));
+                Encoding.UTF8.GetBytes(jwtKey));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "AtlantisBankApi",
-                audience: "AtlantisBankClients",
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: creds
@@ -161,7 +249,6 @@ namespace Atlantis_Bank_API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
 
         private static string GenerateRefreshToken()
         {

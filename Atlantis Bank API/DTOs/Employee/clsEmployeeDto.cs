@@ -12,7 +12,6 @@
         public bool Gender { get; set; }
 
         public int CountryID { get; set; }
-
         public DateTime DateOfBirth { get; set; }
 
         public string Address { get; set; }
@@ -27,7 +26,6 @@
         public DateTime? ExitDate { get; set; }
 
         public decimal Salary { get; set; }
-
         public bool IsActive { get; set; }
     }
 }

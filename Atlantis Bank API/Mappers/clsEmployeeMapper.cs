@@ -7,44 +7,39 @@ namespace Atlantis_Bank_API.Mappers
 {
     public static class clsEmployeeMapper
     {
-        public static IEnumerable<clsEmployeeDto> Map(DataTable dt)
+        public static IEnumerable<clsEmployeeListDto> Map(DataTable dt)
         {
-            List<clsEmployeeDto> employees = new List<clsEmployeeDto>();
+            List<clsEmployeeListDto> employees = new List<clsEmployeeListDto>();
 
             foreach (DataRow row in dt.Rows)
             {
-                employees.Add(new clsEmployeeDto
+                employees.Add(new clsEmployeeListDto
                 {
                     EmployeeID = Convert.ToInt32(row["EmployeeID"]),
 
+                    NationalNo = row["NationalNo"].ToString(),
+
                     FirstName = row["FirstName"].ToString(),
-                    SecondName = row["SecondName"].ToString(),
+
                     LastName = row["LastName"].ToString(),
 
-                    NationalNo = row["NationalNo"].ToString(),
-                    Gender = Convert.ToBoolean(row["Gender"]),
+                    Age = Convert.ToInt32(row["Age"]),
 
-                    CountryID = Convert.ToInt32(row["CountryID"]),
+                    GenderText = row["GenderText"].ToString(),
 
-                    DateOfBirth = Convert.ToDateTime(row["DateOfBirth"]),
-
-                    Address = row["Address"].ToString(),
-                    Email = row["Email"].ToString(),
                     Phone = row["Phone"].ToString(),
-                    ImagePath = row["ImagePath"].ToString(),
 
-                    BranchID = Convert.ToInt32(row["BranchID"]),
-                    PositionID = Convert.ToInt32(row["PositionID"]),
+                    CountryName = row["CountryName"].ToString(),
 
-                    HireDate = Convert.ToDateTime(row["HireDate"]),
+                    BranchName = row["BranchName"].ToString(),
 
-                    ExitDate = row["ExitDate"] == DBNull.Value
-                        ? null
-                        : Convert.ToDateTime(row["ExitDate"]),
+                    Position = row["Position"].ToString(),
 
-                    Salary = Convert.ToDecimal(row["Salary"]),
+                    SystemAccount = row["SystemAccount"].ToString(),
 
-                    IsActive = Convert.ToBoolean(row["IsActive"])
+                    Role = row["Role"].ToString(),
+
+                    HireDate = Convert.ToDateTime(row["HireDate"])
                 });
             }
 
@@ -65,7 +60,6 @@ namespace Atlantis_Bank_API.Mappers
                 Gender = employee.PersonInfo.Gender,
 
                 CountryID = employee.PersonInfo.CountryInfo.CountryID,
-
                 DateOfBirth = employee.PersonInfo.DateOfBirth,
 
                 Address = employee.PersonInfo.Address,
@@ -80,7 +74,6 @@ namespace Atlantis_Bank_API.Mappers
                 ExitDate = employee.ExitDate,
 
                 Salary = employee.Salary,
-
                 IsActive = employee.IsActive
             };
         }

@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Atlantis Bank-BLL\Atlantis Bank-BLL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="packages\" />
+  </ItemGroup>
+
 </Project>

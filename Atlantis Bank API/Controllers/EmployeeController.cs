@@ -11,11 +11,11 @@ namespace Atlantis_Bank_API.Controllers
     public class EmployeeController : ControllerBase
     {
         [HttpGet("All")]
-        public async Task<ActionResult<IEnumerable<clsEmployeeDto>>> GetAllEmployees()
+        public async Task<ActionResult<IEnumerable<clsEmployeeListDto>>> GetAllEmployees()
         {
             DataTable dt = await clsEmployee.GetAllEmployees();
 
-            IEnumerable<clsEmployeeDto> employees = clsEmployeeMapper.Map(dt);
+            IEnumerable<clsEmployeeListDto> employees = clsEmployeeMapper.Map(dt);
 
             return Ok(employees);
         }
@@ -117,7 +117,7 @@ namespace Atlantis_Bank_API.Controllers
                 return StatusCode(403, "You do not have permission to delete employees.");
 
             if (result == enOperationResult.NotFound)
-                return NotFound();
+                return NotFound("Employee is not found");
 
             if (result == enOperationResult.Failed)
                 return BadRequest();

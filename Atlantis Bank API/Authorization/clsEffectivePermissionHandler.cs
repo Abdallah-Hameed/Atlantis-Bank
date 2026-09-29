@@ -2,7 +2,7 @@
 
 namespace Atlantis_Bank_API.Authorization
 {
-    public class clsPermissionHandler : AuthorizationHandler<clsPermissionRequirement>
+    public class clsEffectivePermissionHandler : AuthorizationHandler<clsPermissionRequirement>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
@@ -11,6 +11,13 @@ namespace Atlantis_Bank_API.Authorization
             if (context.User.HasClaim("Permission", requirement.Permission))
             {
                 context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
+
+            if (context.User.HasClaim("PositionPermission", requirement.Permission))
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
             }
 
             return Task.CompletedTask;

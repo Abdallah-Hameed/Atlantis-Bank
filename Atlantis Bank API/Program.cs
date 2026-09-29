@@ -1,4 +1,5 @@
 using Atlantis_Bank_API.Authorization;
+using Atlantis_Bank_DAL;
 using AtlantisBank.BLL;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -40,7 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddSingleton<IAuthorizationHandler, clsPermissionHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, clsEffectivePermissionHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, clsUserUpdateHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, clsUserAddHandler>();
 
@@ -149,6 +150,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+clsDataAccessSettings.ConnectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")!;
 
 if (app.Environment.IsDevelopment())
 {

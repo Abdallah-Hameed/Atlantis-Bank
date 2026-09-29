@@ -211,39 +211,41 @@ namespace Atlantis_Bank_API.Controllers
         private string GenerateAccessToken(clsUser user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.Role.RoleDescription),
-                new Claim("RoleID", user.Role.RoleID.ToString())
-            };
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(ClaimTypes.Role, user.Role.RoleDescription),
+        new Claim("RoleID", user.Role.RoleID.ToString())
+    };
 
-            List<string> permissions = user.Role.GetPermissions();
+            List<string> rolePermissions = user.Role.GetPermissions();
 
-            foreach (string permission in permissions)
+            foreach (string permission in rolePermissions)
             {
                 claims.Add(new Claim("Permission", permission));
             }
 
-            var jwtKey = _configuration["Jwt:Key"]
-                ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+            if (user.EmployeeInfo != null && user.EmployeeInfo.PositionInfo != null)
+            {
+                HashSet<string> positionPermissions = clsAuthorization.GetPositionPermissions(
+                    user.EmployeeInfo.PositionInfo.PositionID);
 
-            var jwtIssuer = _configuration["Jwt:Issuer"]
-                ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
-
-            var jwtAudience = _configuration["Jwt:Audience"]
-                ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+                foreach (string permission in positionPermissions)
+                {
+                    claims.Add(new Claim("PositionPermission", permission));
+                }
+            }
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey));
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: jwtIssuer,
-                audience: jwtAudience,
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(5),
                 signingCredentials: creds
             );
 

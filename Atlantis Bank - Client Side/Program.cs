@@ -115,8 +115,8 @@ public static class ApiClient
 
         var refreshDto = new
         {
-            UserName = TokenManager.UserName,
-            RefreshToken = TokenManager.RefreshToken
+            userName = TokenManager.UserName,
+            refreshToken = TokenManager.RefreshToken
         };
 
         try
@@ -129,16 +129,11 @@ public static class ApiClient
                 return false;
             }
 
-            var result = await response.Content.ReadFromJsonAsync<RefreshResult>();
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            var root = doc.RootElement;
 
-            if (result == null || string.IsNullOrEmpty(result.AccessToken))
-            {
-                TokenManager.Clear();
-                return false;
-            }
-
-            TokenManager.AccessToken = result.AccessToken;
-            TokenManager.RefreshToken = result.RefreshToken;
+            TokenManager.AccessToken = root.GetProperty("accessToken").GetString();
+            TokenManager.RefreshToken = root.GetProperty("refreshToken").GetString();
             return true;
         }
         catch
@@ -146,12 +141,6 @@ public static class ApiClient
             TokenManager.Clear();
             return false;
         }
-    }
-
-    private class RefreshResult
-    {
-        public string AccessToken { get; set; } = string.Empty;
-        public string RefreshToken { get; set; } = string.Empty;
     }
 }
 
@@ -219,6 +208,16 @@ public static class UI
             if (value == "y" || value == "yes") return true;
             if (value == "n" || value == "no") return false;
             Console.WriteLine("⚠️  Please enter 'y' or 'n'.");
+        }
+    }
+
+    public static DateTime PromptDate(string label)
+    {
+        while (true)
+        {
+            var value = Prompt($"{label} (yyyy-MM-dd)");
+            if (DateTime.TryParse(value, out DateTime result)) return result;
+            Console.WriteLine("⚠️  Please enter a valid date.");
         }
     }
 
@@ -317,7 +316,7 @@ public static class AuthMenu
             return;
         }
 
-        var loginDto = new { UserName = user, Password = pass };
+        var loginDto = new { userName = user, password = pass };
         var result = await ApiClient.PostAsync("/api/Auth/login", loginDto);
 
         if (!result.Success)
@@ -373,7 +372,7 @@ public static class MainMenu
             case 6: await TransactionMenu.ShowAsync(); break;
             case 7: await LookupMenu.ShowAsync(); break;
             case 8: ShowToken(); break;
-            case 9: Logout(); break;
+            case 9: await LogoutAsync(); break;
             case 0: Environment.Exit(0); break;
         }
     }
@@ -382,12 +381,20 @@ public static class MainMenu
     {
         UI.SubHeader("Access Token");
         Console.WriteLine(TokenManager.AccessToken);
-        Console.WriteLine("\n💡 Paste into https://jwt.io to inspect.");
+        Console.WriteLine("\n💡 Paste into https://jwt.io to inspect claims.");
         UI.Pause();
     }
 
-    private static void Logout()
+    private static async Task LogoutAsync()
     {
+        var dto = new
+        {
+            userName = TokenManager.UserName,
+            refreshToken = TokenManager.RefreshToken
+        };
+
+        await ApiClient.PostAsync("/api/Auth/logout", dto);
+
         TokenManager.Clear();
         Console.WriteLine("\n✅ Logged out.");
         UI.Pause();
@@ -445,15 +452,20 @@ public static class ClientMenu
     {
         UI.SubHeader("Add New Client");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["firstName"] = UI.PromptRequired("First Name"),
-            ["lastName"] = UI.PromptRequired("Last Name"),
-            ["nationalNumber"] = UI.PromptRequired("National Number"),
-            ["email"] = UI.PromptRequired("Email"),
-            ["phone"] = UI.Prompt("Phone"),
-            ["countryID"] = UI.PromptInt("Country ID"),
-            ["branchID"] = UI.PromptInt("Branch ID")
+            firstName = UI.PromptRequired("First Name"),
+            secondName = UI.PromptRequired("Second Name"),
+            lastName = UI.PromptRequired("Last Name"),
+            nationalNo = UI.PromptRequired("National Number"),
+            gender = UI.PromptBool("Gender (y=Male, n=Female)"),
+            countryID = UI.PromptInt("Country ID"),
+            dateOfBirth = UI.PromptDate("Date of Birth"),
+            address = UI.Prompt("Address"),
+            email = UI.Prompt("Email"),
+            phone = UI.Prompt("Phone"),
+            imagePath = "",
+            branchID = UI.PromptInt("Branch ID")
         };
 
         var r = await ApiClient.PostAsync("/api/Client/Add", dto);
@@ -466,15 +478,20 @@ public static class ClientMenu
         int id = UI.PromptInt("Client ID");
         UI.SubHeader("Update Client");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["firstName"] = UI.PromptRequired("First Name"),
-            ["lastName"] = UI.PromptRequired("Last Name"),
-            ["nationalNumber"] = UI.PromptRequired("National Number"),
-            ["email"] = UI.PromptRequired("Email"),
-            ["phone"] = UI.Prompt("Phone"),
-            ["countryID"] = UI.PromptInt("Country ID"),
-            ["branchID"] = UI.PromptInt("Branch ID")
+            firstName = UI.PromptRequired("First Name"),
+            secondName = UI.PromptRequired("Second Name"),
+            lastName = UI.PromptRequired("Last Name"),
+            nationalNo = UI.PromptRequired("National Number"),
+            gender = UI.PromptBool("Gender (y=Male, n=Female)"),
+            countryID = UI.PromptInt("Country ID"),
+            dateOfBirth = UI.PromptDate("Date of Birth"),
+            address = UI.Prompt("Address"),
+            email = UI.Prompt("Email"),
+            phone = UI.Prompt("Phone"),
+            imagePath = "",
+            branchID = UI.PromptInt("Branch ID")
         };
 
         var r = await ApiClient.PutAsync($"/api/Client/{id}", dto);
@@ -542,16 +559,25 @@ public static class EmployeeMenu
     {
         UI.SubHeader("Add New Employee");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["firstName"] = UI.PromptRequired("First Name"),
-            ["lastName"] = UI.PromptRequired("Last Name"),
-            ["nationalNumber"] = UI.PromptRequired("National Number"),
-            ["email"] = UI.PromptRequired("Email"),
-            ["phone"] = UI.Prompt("Phone"),
-            ["branchID"] = UI.PromptInt("Branch ID"),
-            ["positionID"] = UI.PromptInt("Position ID"),
-            ["salary"] = UI.PromptDecimal("Salary")
+            firstName = UI.PromptRequired("First Name"),
+            secondName = UI.PromptRequired("Second Name"),
+            lastName = UI.PromptRequired("Last Name"),
+            nationalNumber = UI.PromptRequired("National Number"),
+            gender = UI.PromptBool("Gender (y=Male, n=Female)"),
+            countryID = UI.PromptInt("Country ID"),
+            dateOfBirth = UI.PromptDate("Date of Birth"),
+            address = UI.Prompt("Address"),
+            email = UI.Prompt("Email"),
+            phone = UI.Prompt("Phone"),
+            imagePath = "",
+            branchID = UI.PromptInt("Branch ID"),
+            positionID = UI.PromptInt("Position ID"),
+            hireDate = DateTime.UtcNow,
+            exitDate = (DateTime?)null,
+            salary = UI.PromptDecimal("Salary"),
+            isActive = true
         };
 
         var r = await ApiClient.PostAsync("/api/Employee/Add", dto);
@@ -564,16 +590,25 @@ public static class EmployeeMenu
         int id = UI.PromptInt("Employee ID");
         UI.SubHeader("Update Employee");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["firstName"] = UI.PromptRequired("First Name"),
-            ["lastName"] = UI.PromptRequired("Last Name"),
-            ["nationalNumber"] = UI.PromptRequired("National Number"),
-            ["email"] = UI.PromptRequired("Email"),
-            ["phone"] = UI.Prompt("Phone"),
-            ["branchID"] = UI.PromptInt("Branch ID"),
-            ["positionID"] = UI.PromptInt("Position ID"),
-            ["salary"] = UI.PromptDecimal("Salary")
+            firstName = UI.PromptRequired("First Name"),
+            secondName = UI.PromptRequired("Second Name"),
+            lastName = UI.PromptRequired("Last Name"),
+            nationalNumber = UI.PromptRequired("National Number"),
+            gender = UI.PromptBool("Gender (y=Male, n=Female)"),
+            countryID = UI.PromptInt("Country ID"),
+            dateOfBirth = UI.PromptDate("Date of Birth"),
+            address = UI.Prompt("Address"),
+            email = UI.Prompt("Email"),
+            phone = UI.Prompt("Phone"),
+            imagePath = "",
+            branchID = UI.PromptInt("Branch ID"),
+            positionID = UI.PromptInt("Position ID"),
+            hireDate = UI.PromptDate("Hire Date"),
+            exitDate = UI.PromptDate("Exit Date"),
+            salary = UI.PromptDecimal("Salary"),
+            isActive = UI.PromptBool("Is Active")
         };
 
         var r = await ApiClient.PutAsync($"/api/Employee/{id}", dto);
@@ -643,13 +678,13 @@ public static class UserMenu
     {
         UI.SubHeader("Add New User");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["userName"] = UI.PromptRequired("Username"),
-            ["password"] = UI.PromptRequired("Password"),
-            ["roleID"] = UI.PromptInt("Role ID"),
-            ["employeeID"] = UI.PromptInt("Employee ID"),
-            ["active"] = UI.PromptBool("Active")
+            userName = UI.PromptRequired("Username"),
+            password = UI.PromptRequired("Password"),
+            active = UI.PromptBool("Active"),
+            roleID = UI.PromptInt("Role ID"),
+            employeeID = UI.PromptInt("Employee ID")
         };
 
         var r = await ApiClient.PostAsync("/api/User/Add", dto);
@@ -662,11 +697,11 @@ public static class UserMenu
         int id = UI.PromptInt("User ID");
         UI.SubHeader("Update User");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["userName"] = UI.PromptRequired("Username"),
-            ["roleID"] = UI.PromptInt("Role ID"),
-            ["active"] = UI.PromptBool("Active")
+            userName = UI.PromptRequired("Username"),
+            active = UI.PromptBool("Active"),
+            roleID = UI.PromptInt("Role ID")
         };
 
         var r = await ApiClient.PutAsync($"/api/User/{id}", dto);
@@ -687,16 +722,16 @@ public static class UserMenu
         int id = UI.PromptInt("User ID");
         UI.SubHeader("Change Password");
 
-        Console.Write("Old Password (empty for Super Admin): ");
+        Console.Write("Old Password (empty for Super Admin reset): ");
         string oldPass = UI.ReadPassword();
 
         Console.Write("New Password: ");
         string newPass = UI.ReadPassword();
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["oldPassword"] = oldPass,
-            ["newPassword"] = newPass
+            oldPassword = oldPass,
+            newPassword = newPass
         };
 
         var r = await ApiClient.PutAsync($"/api/User/{id}/ChangePassword", dto);
@@ -766,11 +801,11 @@ public static class AccountMenu
     {
         UI.SubHeader("Add New Account");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["clientID"] = UI.PromptInt("Client ID"),
-            ["accountTypeID"] = UI.PromptInt("Account Type ID"),
-            ["branchID"] = UI.PromptInt("Branch ID")
+            personID = UI.PromptInt("Person ID"),
+            branchID = UI.PromptInt("Branch ID"),
+            accountTypeID = UI.PromptInt("Account Type ID")
         };
 
         var r = await ApiClient.PostAsync("/api/Account/Add", dto);
@@ -783,10 +818,10 @@ public static class AccountMenu
         int id = UI.PromptInt("Account ID");
         UI.SubHeader("Update Account");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["accountTypeID"] = UI.PromptInt("Account Type ID"),
-            ["branchID"] = UI.PromptInt("Branch ID")
+            branchID = UI.PromptInt("Branch ID"),
+            isActive = UI.PromptBool("Is Active")
         };
 
         var r = await ApiClient.PutAsync($"/api/Account/{id}", dto);
@@ -851,9 +886,10 @@ public static class AccountTypeMenu
         int id = UI.PromptInt("Account Type ID");
         UI.SubHeader("Update Account Type");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["accountTypeDescription"] = UI.PromptRequired("Description")
+            accountTypeID = id,
+            accountTypeDescription = UI.PromptRequired("Description")
         };
 
         var r = await ApiClient.PutAsync($"/api/AccountType/{id}", dto);
@@ -896,11 +932,11 @@ public static class TransactionMenu
     {
         UI.SubHeader("Deposit");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["accountID"] = UI.PromptInt("Account ID"),
-            ["amount"] = UI.PromptDecimal("Amount"),
-            ["employeeID"] = UI.PromptInt("Employee ID")
+            accountID = UI.PromptInt("Account ID"),
+            amount = UI.PromptDecimal("Amount"),
+            employeeID = UI.PromptInt("Employee ID")
         };
 
         var r = await ApiClient.PostAsync("/api/Transaction/Deposit", dto);
@@ -912,11 +948,11 @@ public static class TransactionMenu
     {
         UI.SubHeader("Withdrawal");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["accountID"] = UI.PromptInt("Account ID"),
-            ["amount"] = UI.PromptDecimal("Amount"),
-            ["employeeID"] = UI.PromptInt("Employee ID")
+            accountID = UI.PromptInt("Account ID"),
+            amount = UI.PromptDecimal("Amount"),
+            employeeID = UI.PromptInt("Employee ID")
         };
 
         var r = await ApiClient.PostAsync("/api/Transaction/Withdrawal", dto);
@@ -928,12 +964,12 @@ public static class TransactionMenu
     {
         UI.SubHeader("Transfer");
 
-        var dto = new Dictionary<string, object?>
+        var dto = new
         {
-            ["accountID"] = UI.PromptInt("Source Account ID"),
-            ["destinationAccountID"] = UI.PromptInt("Destination Account ID"),
-            ["amount"] = UI.PromptDecimal("Amount"),
-            ["employeeID"] = UI.PromptInt("Employee ID")
+            accountID = UI.PromptInt("Source Account ID"),
+            destinationAccountID = UI.PromptInt("Destination Account ID"),
+            amount = UI.PromptDecimal("Amount"),
+            employeeID = UI.PromptInt("Employee ID")
         };
 
         var r = await ApiClient.PostAsync("/api/Transaction/Transfer", dto);

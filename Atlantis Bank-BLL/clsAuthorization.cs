@@ -1,7 +1,5 @@
-﻿using Atlantis_Bank_BLL;
-using AtlantisBank.DAL;
+﻿using AtlantisBank.DAL;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace AtlantisBank.BLL
 {

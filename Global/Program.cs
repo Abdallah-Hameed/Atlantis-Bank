@@ -1,5 +1,4 @@
-﻿using Atlantis_Bank.Accounts;
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace Atlantis_Bank
@@ -14,7 +13,7 @@ namespace Atlantis_Bank
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmDashboard());
+            Application.Run(new frmLoginScreen());
         }
     }
 }

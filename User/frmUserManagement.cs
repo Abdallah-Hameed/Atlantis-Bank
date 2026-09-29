@@ -214,11 +214,11 @@ namespace Atlantis_Bank
         {
             cmbFilter.SelectedIndex = 0;
 
-            //btnAdd.Enabled = clsAuthorization.HasPermission("User_Add");
+            btnAdd.Enabled = clsAuthorization.HasPermission("User_Add");
 
-            //btnUpdate.Enabled = clsAuthorization.HasPermission("User_Edit");
+            btnUpdate.Enabled = clsAuthorization.HasPermission("User_Edit");
 
-            //btnDelete.Enabled = clsAuthorization.HasPermission("User_Delete");
+            btnDelete.Enabled = clsAuthorization.HasPermission("User_Delete");
 
             await _Refresh();
         }

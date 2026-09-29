@@ -28,15 +28,15 @@ namespace Atlantis_Bank
 
             btnTransaction.Focus();
 
-            //btnClientManagement.Enabled = clsAuthorization.HasPermission("Client_View");
+            btnClientManagement.Enabled = clsAuthorization.HasPermission("Client_View");
 
-            //btnEmployeeManagement.Enabled = clsAuthorization.HasPermission("Employee_View");
+            btnEmployeeManagement.Enabled = clsAuthorization.HasPermission("Employee_View");
 
-            //btnUserManagement.Enabled = clsAuthorization.HasPermission("User_View");
+            btnUserManagement.Enabled = clsAuthorization.HasPermission("User_View");
 
-            //btnAccountManagement.Enabled = clsAuthorization.HasPermission("Account_View");
+            btnAccountManagement.Enabled = clsAuthorization.HasPermission("Account_View");
 
-            //btnTransaction.Enabled = clsAuthorization.HasPosition("Transaction_View");
+            btnTransaction.Enabled = clsAuthorization.HasPosition("Transaction_View");
         }
 
         private void btnTransaction_Click(object sender, EventArgs e)
